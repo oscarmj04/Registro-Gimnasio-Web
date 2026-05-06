@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker ALS</title>
+    <!-- Incluimos Pico CSS desde su CDN oficial -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+</head>
+<body>
+    <main class="container">
+        <!-- Bloque para mostrar los mensajes flash de errores de login -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <article style="background-color: #f7a0a0; color: #5a0000; padding: 10px; margin-bottom: 20px;">
+                {{ message }}
+              </article>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Aquí se inyectará el contenido específico de cada página -->
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+    <header>
+        <h2>Panel de Control</h2>
+        <p>¡Bienvenido al Tracker del Gym, <strong>{{ username }}</strong>!</p>
+    </header>
+    
+    <div class="grid">
+        <!-- Tarjeta para el módulo de Ejercicios -->
+        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
+            <h3>Catálogo</h3>
+            <p>Gestiona la base de datos general de ejercicios del gimnasio.</p>
+            <a href="{{ url_for('ejercicios.index') }}" role="button" class="outline">Ver Ejercicios</a>
+        </div>
+        
+        <!-- Tarjeta para el módulo de Rutinas -->
+        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
+            <h3>Mis Rutinas</h3>
+            <p>Agrupa los ejercicios en rutinas personalizadas para tus entrenamientos.</p>
+            <a href="{{ url_for('rutinas.index') }}" role="button" class="outline">Mis Rutinas</a>
+        </div>
+
+        <!-- Tarjeta para el módulo de Registros (Historial) -->
+        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
+            <h3>Mi Historial</h3>
+            <p>Consulta tus levantamientos, pesos y repeticiones a lo largo del tiempo.</p>
+            <a href="{{ url_for('registros.index') }}" role="button" class="outline">Ver Historial</a>
+        </div>
+    </div>
+
+    <footer style="margin-top: 30px; text-align: center;">
+        <a href="{{ url_for('auth.logout') }}" class="secondary">Cerrar sesión</a>
+    </footer>
+</article>
+{% endblock %}

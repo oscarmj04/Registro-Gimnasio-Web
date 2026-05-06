@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><strong>Mis Rutinas</strong></li>
+    </ul>
+    <ul>
+        <li><a href="{{ url_for('rutinas.nueva') }}" role="button">Crear Rutina</a></li>
+        <li><a href="{{ url_for('auth.dashboard') }}" class="secondary outline">Volver al Panel</a></li>
+    </ul>
+</nav>
+
+<div class="grid">
+    {% for rutina in rutinas %}
+    <article>
+        <header>
+            <h3 style="margin-bottom: 0;">{{ rutina.nombre }}</h3>
+        </header>
+        
+        <p><strong>Ejercicios:</strong></p>
+        <ul>
+            {% for oid in rutina.lista_ejercicios_oids %}
+                <!-- Mostramos el nombre o avisamos si se ha borrado -->
+                <li>{{ ejercicios_dict.get(oid|string, "[Ejercicio Eliminado/Archivado]") }}</li>
+            {% endfor %}
+            {% if not rutina.lista_ejercicios_oids %}
+                <li><small>No hay ejercicios en esta rutina.</small></li>
+            {% endif %}
+        </ul>
+
+        <!-- BOTONES DEBAJO DE CADA RUTINA -->
+        <footer style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <!-- Botón principal para entrenar -->
+            <a href="{{ url_for('rutinas.entrenar', oid_rutina=rutina.__oid__) }}" role="button" style="width: 100%; text-align: center;">
+                Empezar Entrenamiento
+            </a>
+            
+            <!-- Botón secundario para borrar -->
+            <form action="{{ url_for('rutinas.borrar', oid_rutina=rutina.__oid__) }}" method="POST" style="margin:0;">
+                <button type="submit" class="secondary outline" style="width: 100%;" onclick="return confirm('¿Seguro que quieres borrar esta rutina?');">
+                    Borrar Rutina
+                </button>
+            </form>
+        </footer>
+    </article>
+    {% else %}
+    <p>Aún no has creado ninguna rutina. ¡Empieza a organizar tu semana!</p>
+    {% endfor %}
+</div>
+{% endblock %}

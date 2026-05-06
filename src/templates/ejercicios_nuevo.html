@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+    <header>
+        <h2>Añadir Nuevo Ejercicio</h2>
+    </header>
+    <form action="{{ url_for('ejercicios.nuevo') }}" method="POST">
+        <label for="nombre">Nombre del Ejercicio</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ej: Press Banca" required>
+
+        <label for="grupo_muscular">Grupo Muscular</label>
+        <select id="grupo_muscular" name="grupo_muscular" required>
+            <option value="Pecho">Pecho</option>
+            <option value="Espalda">Espalda</option>
+            <option value="Pierna">Pierna</option>
+            <option value="Brazos">Brazos</option>
+            <option value="Core">Core</option>
+        </select>
+
+        <label for="descripcion">Descripción Breve</label>
+        <textarea id="descripcion" name="descripcion"></textarea>
+
+        <button type="submit">Guardar Ejercicio</button>
+        <a href="{{ url_for('ejercicios.index') }}" role="button" class="secondary">Cancelar</a>
+    </form>
+</article>
+{% endblock %}

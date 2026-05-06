@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2>Entrenando: {{ rutina.nombre }}</h2>
+            <p>Añade tus series conforme avanzas.</p>
+        </div>
+        <!-- CRONÓMETRO -->
+        <div style="text-align: center; background: #1e1e1e; color: #10b981; padding: 15px; border-radius: 8px; border: 2px solid #10b981;">
+            <div style="font-size: 0.8rem; text-transform: uppercase;">Tiempo Transcurrido</div>
+            <div id="cronometro" style="font-size: 2rem; font-weight: bold; font-family: monospace;">00:00</div>
+        </div>
+    </header>
+
+    {% for ej in ejercicios %}
+    <details>
+        <summary><strong>{{ ej.nombre }}</strong></summary>
+        <div style="padding: 10px; border: 1px dashed var(--muted-border-color); margin-bottom: 10px;">
+            <form action="{{ url_for('registros.nuevo') }}" method="POST" style="display: flex; gap: 10px; align-items: flex-end; margin: 0;">
+                <!-- OID oculto para saber a qué ejercicio va la serie -->
+                <input type="hidden" name="ejercicio_oid" value="{{ ej.oid }}">
+                
+                <div style="flex-grow: 1;">
+                    <label>Peso (kg)</label>
+                    <input type="number" step="0.5" name="peso" required>
+                </div>
+                <div style="flex-grow: 1;">
+                    <label>Reps</label>
+                    <input type="number" name="repeticiones" required>
+                </div>
+                <div>
+                    <button type="submit" class="outline">Añadir Serie</button>
+                </div>
+            </form>
+        </div>
+    </details>
+    {% else %}
+    <p>Esta rutina no tiene ejercicios asignados.</p>
+    {% endfor %}
+
+    <footer>
+        <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary" style="width: 100%; text-align: center;">Finalizar Entrenamiento</a>
+    </footer>
+</article>
+
+<!-- SCRIPT DEL CRONÓMETRO -->
+<script>
+    let segundos = 0;
+    const display = document.getElementById('cronometro');
+    
+    // Recuperar tiempo si la página se recarga al meter una serie (Fase 2)
+    if(sessionStorage.getItem('tiempo_gym')) {
+        segundos = parseInt(sessionStorage.getItem('tiempo_gym'));
+    }
+
+    setInterval(() => {
+        segundos++;
+        sessionStorage.setItem('tiempo_gym', segundos); // Guardar por si recarga
+        
+        let min = Math.floor(segundos / 60);
+        let sec = segundos % 60;
+        
+        // Formatear con ceros (ej. 05:09)
+        min = min < 10 ? '0' + min : min;
+        sec = sec < 10 ? '0' + sec : sec;
+        
+        display.textContent = `${min}:${sec}`;
+    }, 1000);
+
+    // Si le da a "Finalizar", borramos el contador para la próxima vez
+    document.querySelector('footer a').addEventListener('click', () => {
+        sessionStorage.removeItem('tiempo_gym');
+    });
+</script>
+{% endblock %}

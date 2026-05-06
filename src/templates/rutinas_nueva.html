@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article>
+    <header>
+        <h2>Crear Nueva Rutina</h2>
+    </header>
+    <form action="{{ url_for('rutinas.nueva') }}" method="POST">
+        <label for="nombre">Nombre de la Rutina</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ej: Día de Pierna" required>
+
+        <fieldset>
+            <legend><strong>Selecciona los ejercicios:</strong></legend>
+            {% for ejercicio in ejercicios %}
+            <label for="ej_{{ loop.index }}">
+                <!-- El valor (value) que se envía es el OID del ejercicio -->
+                <input type="checkbox" id="ej_{{ loop.index }}" name="ejercicios" value="{{ ejercicio.__oid__ }}">
+                {{ ejercicio.nombre }} <small>({{ ejercicio.grupo_muscular }})</small>
+            </label>
+            {% else %}
+            <p><small>No hay ejercicios en el catálogo. Ve al catálogo para añadir algunos primero.</small></p>
+            {% endfor %}
+        </fieldset>
+
+        <button type="submit">Guardar Rutina</button>
+        <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary">Cancelar</a>
+    </form>
+</article>
+{% endblock %}

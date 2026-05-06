@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><strong>Mi Historial de Entrenamiento</strong></li>
+    </ul>
+    <ul>
+        <li><a href="{{ url_for('auth.dashboard') }}" class="secondary">Volver al Panel</a></li>
+    </ul>
+</nav>
+
+<figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Ejercicio</th>
+                <th scope="col">Peso (kg)</th>
+                <th scope="col">Reps</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registros|sort(attribute='fecha', reverse=true) %}
+            <tr>
+                <td>{{ reg.fecha }}</td>
+                <!-- Mostramos el nombre o avisamos si el admin borró el ejercicio del catálogo -->
+                <td>{{ ejercicios_dict.get(reg.ejercicio_oid|string, "[Ejercicio Eliminado]") }}</td>
+                <td>{{ reg.peso }}</td>
+                <td>{{ reg.repeticiones }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center;">No hay registros de entrenamiento aún.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% endblock %}

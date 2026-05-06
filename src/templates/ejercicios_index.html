@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><strong>Catálogo de Ejercicios</strong></li>
+    </ul>
+    <ul>
+        <li><a href="{{ url_for('ejercicios.nuevo') }}" role="button">Añadir Ejercicio</a></li>
+        <li><a href="{{ url_for('auth.dashboard') }}" class="secondary">Volver al Panel</a></li>
+    </ul>
+</nav>
+
+<div class="grid">
+    {% for ejercicio in ejercicios %}
+    <article>
+        <header>{{ ejercicio.nombre }}</header>
+        <p><strong>Grupo:</strong> {{ ejercicio.grupo_muscular }}</p>
+        {% if ejercicio.descripcion %}
+            <p>{{ ejercicio.descripcion }}</p>
+        {% else %}
+            <p><small><em>Sin descripción.</em></small></p>
+        {% endif %}
+            <!-- Fíjate cómo usamos un formulario POST para borrar, es más seguro que un enlace -->
+        <footer style="display: flex; gap: 10px;">
+            <form action="{{ url_for('ejercicios.borrar', oid_ejercicio=ejercicio.__oid__, tipo='suave') }}" method="POST" style="margin:0;">
+                <button type="submit" class="secondary outline" style="font-size: 0.8rem;" onclick="return confirm('¿Archivar? No podrás usarlo en nuevas rutinas, pero mantendrás tu historial.');">Archivar</button>
+            </form>
+            <form action="{{ url_for('ejercicios.borrar', oid_ejercicio=ejercicio.__oid__, tipo='duro') }}" method="POST" style="margin:0;">
+                <button type="submit" style="background-color: #d81b60; border: none; font-size: 0.8rem;" onclick="return confirm('¡CUIDADO! Esto borrará el ejercicio y TODO el historial asociado de todos los usuarios.');">Borrar Todo</button>
+            </form>
+        </footer>
+    </article>
+    {% else %}
+    <p>No hay ejercicios en el catálogo. ¡Añade el primero!</p>
+    {% endfor %}
+</div>
+{% endblock %}

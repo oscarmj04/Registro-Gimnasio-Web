@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article class="grid">
+    <div>
+        <hgroup>
+            <h1>Acceso al Sistema</h1>
+            <h2>Tracker de Gimnasio - Proyecto ALS</h2>
+        </hgroup>
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <label for="username">Usuario</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <p>¿No tienes cuenta? <a href="{{ url_for('auth.register') }}">Regístrate aquí</a>.</p>
+    </div>
+</article>
+{% endblock %}
