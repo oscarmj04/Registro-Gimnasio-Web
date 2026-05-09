@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<hgroup>
+    <h2>Muro de la Comunidad 🌎</h2>
+    <h3>Mira lo que otros usuarios están entrenando</h3>
+</hgroup>
+
+{% for s in sesiones %}
+<article style="margin-bottom: 20px;">
+    <header>
+        <strong>{{ s.usuario_oid }}</strong> completó <strong>{{ s.nombre_rutina }}</strong>
+        <div style="color: var(--muted-color); font-size: 0.85rem;">{{ s.fecha }} • Duración: {{ s.duracion }}</div>
+    </header>
+    
+    <table role="grid" style="margin-bottom: 0;">
+        <thead>
+            <tr>
+                <th>Ejercicio</th>
+                <th style="text-align: right;">Series Realizadas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ej in s.ejercicios_data %}
+            <tr>
+                <td>{{ ej.nombre }}</td>
+                <td style="text-align: right;">{{ ej.series|length }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</article>
+{% else %}
+<p>Aún no hay entrenamientos registrados en la comunidad. ¡Sé el primero en entrenar!</p>
+{% endfor %}
+{% endblock %}

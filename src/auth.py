@@ -37,7 +37,7 @@ def login():
             login_user(user)
             return redirect(url_for('auth.dashboard')) 
         else:
-            flash('Usuario o contraseña incorrectos.')
+            flash('Usuario o contraseña incorrectos.', 'error')
             
     return render_template('login.html')
 
@@ -48,7 +48,7 @@ def register():
         password = request.form.get('password')
         
         if User.find(sirp, username):
-            flash('Ese nombre de usuario ya está en uso.')
+            flash('Ese nombre de usuario ya está en uso.', 'error')
         else:
             # Guardamos el usuario con la contraseña cifrada
             nuevo_usuario = User(username, generate_password_hash(password))

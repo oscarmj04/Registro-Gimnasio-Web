@@ -1,29 +1,104 @@
 {% extends "base.html" %}
-
 {% block content %}
 <article>
     <header>
-        <h2>Crear Nueva Rutina</h2>
+        <h3>Configurar Nueva Rutina</h3>
     </header>
+
     <form action="{{ url_for('rutinas.nueva') }}" method="POST">
-        <label for="nombre">Nombre de la Rutina</label>
-        <input type="text" id="nombre" name="nombre" placeholder="Ej: Día de Pierna" required>
+        <label>Nombre de la rutina:
+            <input type="text" name="nombre" placeholder="Ej: Fullbody Lunes" required>
+        </label>
 
-        <fieldset>
-            <legend><strong>Selecciona los ejercicios:</strong></legend>
-            {% for ejercicio in ejercicios %}
-            <label for="ej_{{ loop.index }}">
-                <!-- El valor (value) que se envía es el OID del ejercicio -->
-                <input type="checkbox" id="ej_{{ loop.index }}" name="ejercicios" value="{{ ejercicio.__oid__ }}">
-                {{ ejercicio.nombre }} <small>({{ ejercicio.grupo_muscular }})</small>
-            </label>
-            {% else %}
-            <p><small>No hay ejercicios en el catálogo. Ve al catálogo para añadir algunos primero.</small></p>
-            {% endfor %}
-        </fieldset>
+        <h5>Ejercicios seleccionados</h5>
+        <div id="lista-ejercicios-rutina" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); padding-left: 1rem;">
+            <p id="mensaje-vacia" style="color: var(--muted-color);">La rutina está vacía. Añade ejercicios desde el catálogo abajo.</p>
+        </div>
 
-        <button type="submit">Guardar Rutina</button>
-        <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary">Cancelar</a>
+        <hr>
+        <div style="background: var(--card-background-color); padding: 1.5rem; border-radius: 10px;">
+            <label><strong>Añadir desde el catálogo:</strong></label>
+            <div class="grid">
+                <select id="sel-catalogo">
+                    <option value="">-- Elige un ejercicio --</option>
+                    {% for c in catalogo %}
+                    <option value="{{ c.__oid__ }}">{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" onclick="añadirEjercicio()">Añadir</button>
+                <button type="button" class="secondary outline" onclick="document.getElementById('modal-nuevo-ejercicio').showModal()">✨ Crear Nuevo</button>
+            </div>
+        </div>
+
+        <footer class="grid" style="margin-top: 2rem;">
+            <button type="submit">Guardar Rutina</button>
+            <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary outline">Descartar</a>
+        </footer>
     </form>
 </article>
+
+<dialog id="modal-nuevo-ejercicio">
+  <article>
+    <header>
+      <a href="#close" aria-label="Close" class="close" onclick="document.getElementById('modal-nuevo-ejercicio').close()"></a>
+      <h5>Nuevo Ejercicio para el Catálogo</h5>
+    </header>
+    <input type="text" id="modal-nombre" placeholder="Nombre (Ej: Sentadilla Hack)">
+    <select id="modal-grupo">
+        <option value="Pecho">Pecho</option><option value="Espalda">Espalda</option>
+        <option value="Pierna">Pierna</option><option value="Brazos">Brazos</option>
+        <option value="Core">Core</option>
+    </select>
+    <footer>
+      <button class="secondary" onclick="document.getElementById('modal-nuevo-ejercicio').close()">Cancelar</button>
+      <button onclick="guardarNuevoYAgregar()">Guardar y Añadir</button>
+    </footer>
+  </article>
+</dialog>
+
+<script>
+function renderEjercicioEnLista(id, nombre) {
+    document.getElementById('mensaje-vacia').style.display = 'none';
+    const container = document.getElementById('lista-ejercicios-rutina');
+    const div = document.createElement('div');
+    div.className = 'grid';
+    div.style.cssText = "align-items: center; margin-bottom: 0.5rem; background: var(--card-background-color); padding: 5px 10px; border-radius: 5px;";
+    div.innerHTML = `
+        <span style="flex-grow:1;"><strong>${nombre}</strong></span>
+        <input type="hidden" name="ejercicios_seleccionados" value="${id}">
+        <button type="button" class="secondary outline" onclick="this.parentElement.remove()" style="margin-bottom:0; width: auto; padding: 2px 10px;">Eliminar</button>
+    `;
+    container.appendChild(div);
+}
+
+function añadirEjercicio() {
+    const sel = document.getElementById('sel-catalogo');
+    if(!sel.value) return;
+    renderEjercicioEnLista(sel.value, sel.options[sel.selectedIndex].text);
+    sel.value = "";
+}
+
+async function guardarNuevoYAgregar() {
+    const nombre = document.getElementById('modal-nombre').value;
+    const grupo = document.getElementById('modal-grupo').value;
+    if(!nombre) return;
+
+    const response = await fetch("{{ url_for('ejercicios.crear_ajax') }}", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({nombre: nombre, grupo_muscular: grupo})
+    });
+
+    if(response.ok) {
+        const data = await response.json();
+        renderEjercicioEnLista(data.oid, data.nombre);
+        // Actualizamos el selector también
+        const opt = document.createElement('option');
+        opt.value = data.oid; opt.text = data.nombre;
+        document.getElementById('sel-catalogo').add(opt);
+        document.getElementById('modal-nuevo-ejercicio').close();
+        document.getElementById('modal-nombre').value = "";
+    }
+}
+</script>
 {% endblock %}

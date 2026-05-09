@@ -1,23 +1,45 @@
-from flask import Blueprint, request, redirect, url_for, flash, render_template
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 import sirope
 
-ejercicios_bp = Blueprint('ejercicios', __name__, url_prefix='/ejercicios')
+ejercicios_bp = Blueprint('ejercicios', __name__, url_prefix='/feed')
 sirp = sirope.Sirope()
 
 class Ejercicio:
-    def __init__(self, nombre, grupo_muscular, descripcion):
+    def __init__(self, nombre, grupo_muscular, descripcion, es_defecto=False):
         self.nombre = nombre
         self.grupo_muscular = grupo_muscular
         self.descripcion = descripcion
-        self.activo = True  # Novedad: Permite el "borrado suave"
+        self.es_defecto = es_defecto  # NUEVO: Si es True, no se puede borrar
+        self.activo = True
 
 @ejercicios_bp.route('/')
 @login_required
 def index():
-    # Solo mostramos en el catálogo los que están "activos"
-    lista_ejercicios = [e for e in sirp.load_all(Ejercicio) if getattr(e, 'activo', True)]
-    return render_template('ejercicios_index.html', ejercicios=lista_ejercicios)
+    from modulo_registros import SesionEntrenamiento
+    todas_las_sesiones = list(sirp.load_all(SesionEntrenamiento))
+    todas_las_sesiones.sort(key=lambda x: x.fecha, reverse=True)
+    return render_template('feed_index.html', sesiones=todas_las_sesiones)
+
+# NUEVA RUTA: Para crear ejercicios desde dentro de un entrenamiento sin recargar
+@ejercicios_bp.route('/crear_ajax', methods=['POST'])
+@login_required
+def crear_ajax():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    grupo = data.get('grupo_muscular')
+    desc = data.get('descripcion', '')
+
+    if not nombre or not grupo:
+        return jsonify({"error": "Faltan campos"}), 400
+
+    nuevo_ej = Ejercicio(nombre, grupo, desc)
+    oid = sirp.save(nuevo_ej)
+    
+    return jsonify({
+        "oid": str(oid),
+        "nombre": nuevo_ej.nombre
+    })
 
 @ejercicios_bp.route('/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -30,7 +52,7 @@ def nuevo():
         )
         sirp.save(nuevo_ejercicio)
         flash('Ejercicio añadido al catálogo.')
-        return redirect(url_for('ejercicios.index'))
+        return redirect(url_for('rutinas.index'))
     return render_template('ejercicios_nuevo.html')
 
 @ejercicios_bp.route('/borrar/<oid_ejercicio>/<tipo>', methods=['POST'])
@@ -39,35 +61,46 @@ def borrar(oid_ejercicio, tipo):
     from modulo_rutinas import Rutina 
     from modulo_registros import Registro
     
-    # 1. Sacar el ejercicio de todas las rutinas futuras
     for rutina in sirp.load_all(Rutina):
         oids_str = [str(oid) for oid in rutina.lista_ejercicios_oids]
         if str(oid_ejercicio) in oids_str:
             rutina.lista_ejercicios_oids = [oid for oid in rutina.lista_ejercicios_oids if str(oid) != str(oid_ejercicio)]
             sirp.save(rutina)
             
-    # 2. Encontrar el objeto Ejercicio real para manipularlo o borrarlo
     ejercicio_encontrado = None
     for e in sirp.load_all(Ejercicio):
         if str(e.__oid__) == oid_ejercicio:
             ejercicio_encontrado = e
             break
-
-    if tipo == 'suave':
-        if ejercicio_encontrado:
-            ejercicio_encontrado.activo = False
-            sirp.save(ejercicio_encontrado) # Actualizamos el objeto real
-            flash('Ejercicio archivado. Se ha quitado de las rutinas, pero el historial se mantiene.')
-            
+    if getattr(ejercicio_encontrado, 'es_defecto', False):
+        flash('No puedes archivar ni borrar los ejercicios base del sistema.', 'error')
+        return redirect(url_for('rutinas.index'))
+    
+    if tipo == 'suave' and ejercicio_encontrado:
+        ejercicio_encontrado.activo = False
+        sirp.save(ejercicio_encontrado)
+        flash('Ejercicio archivado.')
     elif tipo == 'duro':
-        # Primero borramos su historial buscando los registros
-        for reg in sirp.load_all(Registro):
-            if str(reg.ejercicio_oid) == str(oid_ejercicio):
-                sirp.delete(reg.__oid__) # Borramos con el OID real del registro
-                
-        # Luego destruimos el ejercicio usando su OID real
         if ejercicio_encontrado:
             sirp.delete(ejercicio_encontrado.__oid__)
-            flash('Ejercicio destruido permanentemente (incluyendo historiales).')
+            flash('Ejercicio destruido permanentemente.')
 
-    return redirect(url_for('ejercicios.index'))
+    return redirect(url_for('rutinas.index'))
+
+@ejercicios_bp.route('/generar_base')
+@login_required
+def generar_base():
+    # Lista de ejercicios intocables
+    ejercicios_base = [
+        Ejercicio("Press de Banca", "Pecho", "Básico con barra", es_defecto=True),
+        Ejercicio("Sentadilla Trasera", "Pierna", "Básico con barra", es_defecto=True),
+        Ejercicio("Peso Muerto", "Espalda", "Levantamiento tradicional", es_defecto=True),
+        Ejercicio("Dominadas", "Espalda", "Tracción con peso corporal", es_defecto=True),
+        Ejercicio("Press Militar", "Brazos", "Empuje vertical de hombros", es_defecto=True)
+    ]
+    
+    for ej in ejercicios_base:
+        sirp.save(ej)
+        
+    flash('¡Ejercicios por defecto generados con éxito!')
+    return redirect(url_for('rutinas.index'))

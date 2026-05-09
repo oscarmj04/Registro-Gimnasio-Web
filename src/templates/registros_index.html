@@ -3,38 +3,37 @@
 {% block content %}
 <nav>
     <ul>
-        <li><strong>Mi Historial de Entrenamiento</strong></li>
+        <li><strong>🕒 Mi Historial Personal</strong></li>
     </ul>
     <ul>
-        <li><a href="{{ url_for('auth.dashboard') }}" class="secondary">Volver al Panel</a></li>
+        <li><a href="{{ url_for('rutinas.index') }}" class="secondary">Volver a Rutinas</a></li>
     </ul>
 </nav>
 
-<figure>
-    <table role="grid">
-        <thead>
-            <tr>
-                <th scope="col">Fecha</th>
-                <th scope="col">Ejercicio</th>
-                <th scope="col">Peso (kg)</th>
-                <th scope="col">Reps</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for reg in registros|sort(attribute='fecha', reverse=true) %}
-            <tr>
-                <td>{{ reg.fecha }}</td>
-                <!-- Mostramos el nombre o avisamos si el admin borró el ejercicio del catálogo -->
-                <td>{{ ejercicios_dict.get(reg.ejercicio_oid|string, "[Ejercicio Eliminado]") }}</td>
-                <td>{{ reg.peso }}</td>
-                <td>{{ reg.repeticiones }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4" style="text-align: center;">No hay registros de entrenamiento aún.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</figure>
+<div class="grid">
+    {% for sesion in sesiones %}
+    <article style="margin-bottom: 20px;">
+        <header>
+            <h4 style="margin-bottom: 0;">{{ sesion.nombre_rutina }}</h4>
+            <small>{{ sesion.fecha }}</small>
+        </header>
+        
+        <p>
+            <strong>Duración:</strong> {{ sesion.duracion }}<br>
+            <strong>Ejercicios:</strong> {{ sesion.ejercicios_data|length }} realizados
+        </p>
+        
+        <footer style="display: flex; gap: 10px; margin-top: 10px;">
+            <a href="{{ url_for('registros.detalle', oid_sesion=sesion.__oid__) }}" role="button" style="width: 100%;">Ver Detalles</a>
+            <form action="{{ url_for('registros.borrar_sesion', oid_sesion=sesion.__oid__) }}" method="POST" style="margin:0;">
+                <button type="submit" style="background-color: #d81b60; border: none;" onclick="return confirm('¿Borrar este entrenamiento del historial?');">Borrar</button>
+            </form>
+        </footer>
+    </article>
+    {% else %}
+    <article>
+        <p>Aún no tienes entrenamientos guardados. ¡Empieza uno desde la pestaña de Rutinas!</p>
+    </article>
+    {% endfor %}
+</div>
 {% endblock %}

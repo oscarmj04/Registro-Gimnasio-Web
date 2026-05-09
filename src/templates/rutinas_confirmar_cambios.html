@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<article>
+    <header>
+        <h3>¿Deseas actualizar la rutina?</h3>
+    </header>
+    <p>Has realizado cambios en los ejercicios durante este entrenamiento de <strong>{{ rutina.nombre }}</strong>.</p>
+    <p>¿Quieres que estos cambios se guarden permanentemente en la definición de la rutina para la próxima vez?</p>
+    
+    <form action="{{ url_for('rutinas.aplicar_cambios', oid_rutina=rutina.__oid__) }}" method="POST" class="grid">
+        <button type="submit" name="decision" value="si" style="background-color: #388e3c; border: none;">Sí, guardar cambios</button>
+        <button type="submit" name="decision" value="no" class="secondary outline">No, mantener versión anterior</button>
+    </form>
+</article>
+{% endblock %}

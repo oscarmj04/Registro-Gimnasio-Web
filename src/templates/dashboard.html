@@ -3,35 +3,40 @@
 {% block content %}
 <article>
     <header>
-        <h2>Panel de Control</h2>
-        <p>¡Bienvenido al Tracker del Gym, <strong>{{ username }}</strong>!</p>
+        <hgroup>
+            <h2>Panel de Control</h2>
+            <h3>¡Bienvenido de nuevo, <strong>{{ username }}</strong>!</h3>
+        </hgroup>
     </header>
     
     <div class="grid">
-        <!-- Tarjeta para el módulo de Ejercicios -->
-        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
-            <h3>Catálogo</h3>
-            <p>Gestiona la base de datos general de ejercicios del gimnasio.</p>
-            <a href="{{ url_for('ejercicios.index') }}" role="button" class="outline">Ver Ejercicios</a>
+        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h4 style="margin-bottom: 0.5rem;">🌎 Feed Social</h4>
+                <p>Mira los entrenamientos de la comunidad, descubre nuevos ejercicios y comparte tus progresos.</p>
+            </div>
+            <a href="{{ url_for('ejercicios.index') }}" role="button" class="contrast">Ir al Muro</a>
         </div>
         
-        <!-- Tarjeta para el módulo de Rutinas -->
-        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
-            <h3>Mis Rutinas</h3>
-            <p>Agrupa los ejercicios en rutinas personalizadas para tus entrenamientos.</p>
-            <a href="{{ url_for('rutinas.index') }}" role="button" class="outline">Mis Rutinas</a>
+        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h4 style="margin-bottom: 0.5rem;">📋 Mis Rutinas</h4>
+                <p>Crea rutinas, gestiona tu catálogo personal de ejercicios y empieza a entrenar ahora mismo.</p>
+            </div>
+            <a href="{{ url_for('rutinas.index') }}" role="button">Gestionar Rutinas</a>
         </div>
 
-        <!-- Tarjeta para el módulo de Registros (Historial) -->
-        <div style="padding: 1rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius);">
-            <h3>Mi Historial</h3>
-            <p>Consulta tus levantamientos, pesos y repeticiones a lo largo del tiempo.</p>
-            <a href="{{ url_for('registros.index') }}" role="button" class="outline">Ver Historial</a>
+        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h4 style="margin-bottom: 0.5rem;">🕒 Mi Historial</h4>
+                <p>Consulta tus sesiones pasadas, repasa tus marcas personales y analiza tu evolución.</p>
+            </div>
+            <a href="{{ url_for('registros.index') }}" role="button" class="secondary">Ver Historial</a>
         </div>
     </div>
 
-    <footer style="margin-top: 30px; text-align: center;">
-        <a href="{{ url_for('auth.logout') }}" class="secondary">Cerrar sesión</a>
+    <footer style="margin-top: 2rem; text-align: center;">
+        <p><small>Gym Tracker ALS v2.0 - Modo Social Activado</small></p>
     </footer>
 </article>
 {% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <ul>
+        <li><strong>Resumen del Entrenamiento</strong></li>
+    </ul>
+    <ul>
+        <li><a href="{{ url_for('registros.index') }}" class="secondary">Volver al Historial</a></li>
+    </ul>
+</nav>
+
+<article>
+    <header>
+        <h2 style="margin-bottom: 5px;">{{ sesion.nombre_rutina }}</h2>
+        <p style="color: var(--muted-color); margin-bottom: 0;">
+            Realizado el {{ sesion.fecha }} | Duración total: {{ sesion.duracion }}
+        </p>
+    </header>
+
+    {% for ejercicio in sesion.ejercicios_data %}
+    <section style="margin-bottom: 30px; border-bottom: 1px solid var(--muted-border-color); padding-bottom: 15px;">
+        <h3 style="color: var(--primary);">{{ ejercicio.nombre }}</h3>
+        
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>Serie</th>
+                    <th>Peso (Kg)</th>
+                    <th>Repeticiones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for serie in ejercicio.series %}
+                <tr>
+                    <td><strong>{{ loop.index }}</strong></td>
+                    <td>{{ serie.peso }} kg</td>
+                    <td>{{ serie.reps }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endfor %}
+
+    <footer>
+        <p><small>ID de sesión: {{ sesion.__oid__ }}</small></p>
+    </footer>
+</article>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<article>
+    <header>
+        <h3>Editar Rutina: {{ rutina.nombre }}</h3>
+    </header>
+
+    <form action="{{ url_for('rutinas.actualizar', oid_rutina=rutina.__oid__) }}" method="POST">
+        <label>Nombre de la rutina:
+            <input type="text" name="nombre" value="{{ rutina.nombre }}" required>
+        </label>
+
+        <h5>Ejercicios en la rutina (Arrastra o usa las flechas)</h5>
+        <div id="lista-edicion" style="margin-bottom: 20px;">
+            {% for ej in ejercicios %}
+            <article style="padding: 10px; margin-bottom: 10px; border: 1px solid var(--muted-border-color);" class="item-ejercicio">
+                <div class="grid" style="align-items: center; margin-bottom: 0;">
+                    <div style="flex-grow: 1;">
+                        <strong>{{ ej.nombre }}</strong>
+                        <input type="hidden" name="ejercicios_seleccionados" value="{{ ej.__oid__ }}">
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, -1)">↑</button>
+                        <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, 1)">↓</button>
+                        <button type="button" style="background-color: #d81b60; border:none; padding: 2px 10px;" onclick="this.closest('article').remove()">Eliminar</button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <hr>
+        <label><strong>Añadir ejercicio del catálogo:</strong></label>
+        <div class="grid">
+            <select id="sel-catalogo">
+                {% for c in catalogo %}
+                <option value="{{ c.__oid__ }}">{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+            <button type="button" onclick="añadirAlEditor()">+ Añadir</button>
+        </div>
+
+        <footer class="grid">
+            <button type="submit">Guardar Cambios</button>
+            <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary outline">Cancelar</a>
+        </footer>
+    </form>
+</article>
+
+<script>
+function mover(btn, direccion) {
+    const item = btn.closest('.item-ejercicio');
+    if (direccion === -1 && item.previousElementSibling) {
+        item.parentNode.insertBefore(item, item.previousElementSibling);
+    } else if (direccion === 1 && item.nextElementSibling) {
+        item.parentNode.insertBefore(item.nextElementSibling, item);
+    }
+}
+
+function añadirAlEditor() {
+    const sel = document.getElementById('sel-catalogo');
+    const id = sel.value;
+    const nombre = sel.options[sel.selectedIndex].text;
+    
+    const html = `
+        <article style="padding: 10px; margin-bottom: 10px; border: 1px solid var(--muted-border-color);" class="item-ejercicio">
+            <div class="grid" style="align-items: center; margin-bottom: 0;">
+                <div style="flex-grow: 1;">
+                    <strong>${nombre}</strong>
+                    <input type="hidden" name="ejercicios_seleccionados" value="${id}">
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, -1)">↑</button>
+                    <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, 1)">↓</button>
+                    <button type="button" style="background-color: #d81b60; border:none; padding: 2px 10px;" onclick="this.closest('article').remove()">Eliminar</button>
+                </div>
+            </div>
+        </article>`;
+    document.getElementById('lista-edicion').insertAdjacentHTML('beforeend', html);
+}
+</script>
+{% endblock %}

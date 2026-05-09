@@ -4,23 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Tracker ALS</title>
-    <!-- Incluimos Pico CSS desde su CDN oficial -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
 </head>
 <body>
+    <nav class="container" style="padding-top: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--muted-border-color); margin-bottom: 20px;">
+        <ul>
+            <li><strong>🏋️‍♂️ Gym Tracker</strong></li>
+        </ul>
+        <ul>
+            <li><a href="{{ url_for('ejercicios.index') }}">🌎 Feed</a></li>
+            <li><a href="{{ url_for('rutinas.index') }}">📋 Rutinas</a></li>
+            <li><a href="{{ url_for('registros.index') }}">🕒 Historial</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('auth.logout') }}" class="secondary">Salir</a></li>
+            {% endif %}
+        </ul>
+    </nav>
     <main class="container">
-        <!-- Bloque para mostrar los mensajes flash de errores de login -->
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            {% for message in messages %}
-              <article style="background-color: #f7a0a0; color: #5a0000; padding: 10px; margin-bottom: 20px;">
+            {% for category, message in messages %}
+              {% set bg_color = "#f7a0a0" if category == "error" else "#d4edda" %}
+              {% set text_color = "#5a0000" if category == "error" else "#155724" %}
+              
+              <article style="background-color: {{ bg_color }}; color: {{ text_color }}; padding: 10px; margin-bottom: 20px; border-radius: 5px;">
                 {{ message }}
               </article>
             {% endfor %}
           {% endif %}
         {% endwith %}
 
-        <!-- Aquí se inyectará el contenido específico de cada página -->
         {% block content %}{% endblock %}
     </main>
 </body>

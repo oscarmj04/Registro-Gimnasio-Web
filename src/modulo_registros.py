@@ -6,40 +6,49 @@ import sirope
 registros_bp = Blueprint('registros', __name__, url_prefix='/registros')
 sirp = sirope.Sirope()
 
+# Mantenemos el antiguo para evitar errores con caché residual
 class Registro:
     def __init__(self, user_id, ejercicio_oid, peso, repeticiones):
         self.user_id = user_id
         self.ejercicio_oid = ejercicio_oid
         self.peso = peso
         self.repeticiones = repeticiones
-        # Guardamos la fecha actual en formato texto (ej: 2026-05-04)
         self.fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+class SesionEntrenamiento:
+    def __init__(self, usuario_oid, nombre_rutina, duracion, ejercicios_data):
+        self.usuario_oid = str(usuario_oid)
+        self.nombre_rutina = nombre_rutina
+        self.duracion = duracion
+        self.fecha = datetime.now().strftime("%d/%m/%Y %H:%M")
+        self.ejercicios_data = ejercicios_data
 
 @registros_bp.route('/')
 @login_required
 def index():
-    todos_registros = list(sirp.load_all(Registro))
-    # Filtramos para mostrar solo el historial del usuario actual
-    mis_registros = [r for r in todos_registros if r.user_id == current_user.get_id()]
+    todas = list(sirp.load_all(SesionEntrenamiento))
+    mis_sesiones = [s for s in todas if s.usuario_oid == str(current_user.get_id())]
     
-    # Cargamos los nombres de los ejercicios para mostrarlos en el HTML
-    from modulo_ejercicios import Ejercicio
-    todos_ejercicios = {str(e.__oid__): e.nombre for e in sirp.load_all(Ejercicio)}
+    # EL VERDADERO CAMBIO: Ordenamos matemáticamente leyendo el texto de la fecha
+    mis_sesiones.sort(
+        key=lambda x: datetime.strptime(x.fecha, "%d/%m/%Y %H:%M"), 
+        reverse=True
+    )
     
-    return render_template('registros_index.html', registros=mis_registros, ejercicios_dict=todos_ejercicios)
+    return render_template('registros_index.html', sesiones=mis_sesiones)
 
-@registros_bp.route('/nuevo', methods=['POST'])
+@registros_bp.route('/detalle/<oid_sesion>')
 @login_required
-def nuevo():
-    # Esta ruta será llamada por JavaScript más adelante sin recargar la página,
-    # pero por ahora la dejamos lista para recibir datos de un formulario normal.
-    ejercicio_oid = request.form.get('ejercicio_oid')
-    peso = request.form.get('peso')
-    repeticiones = request.form.get('repeticiones')
-    
-    nuevo_registro = Registro(current_user.get_id(), ejercicio_oid, float(peso), int(repeticiones))
-    sirp.save(nuevo_registro)
-    
-    flash('Serie registrada con éxito.')
-    # Volvemos a la página anterior (suele ser la vista de la rutina)
-    return redirect(request.referrer or url_for('rutinas.index'))
+def detalle(oid_sesion):
+    sesion = next((s for s in sirp.load_all(SesionEntrenamiento) if str(s.__oid__) == oid_sesion), None)
+    return render_template('historial_detalle.html', sesion=sesion)
+
+@registros_bp.route('/borrar_sesion/<oid_sesion>', methods=['POST'])
+@login_required
+def borrar_sesion(oid_sesion):
+    for s in sirp.load_all(SesionEntrenamiento):
+        if str(s.__oid__) == oid_sesion and s.usuario_oid == str(current_user.get_id()):
+            sirp.delete(s.__oid__)
+            flash('Sesión de entrenamiento eliminada del historial.')
+            break
+    return redirect(url_for('registros.index'))
