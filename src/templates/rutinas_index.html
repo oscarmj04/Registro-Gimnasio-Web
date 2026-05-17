@@ -5,8 +5,13 @@
     <p>Gestiona tus planes de entrenamiento personales.</p>
 </hgroup>
 
-<div style="margin-bottom: 2rem;">
+<div style="margin-bottom: 1rem;">
     <a href="{{ url_for('rutinas.nueva') }}" role="button" style="width: 100%;">➕ Crear Nueva Rutina</a>
+</div>
+
+<div class="grid" style="margin-bottom: 2rem;">
+    <a href="{{ url_for('ejercicios.index') }}" role="button" class="secondary outline" style="margin-bottom: 0;">📋 Catálogo General</a>
+    <a href="{{ url_for('ejercicios.personalizados') }}" role="button" class="secondary outline" style="margin-bottom: 0;">🛠️ Ejercicios Personalizados</a>
 </div>
 
 <div class="grid">

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ul>
+    <li><a href="{{ url_for('rutinas.index') }}">📋 Rutinas</a></li>
+    <li><strong>Buscar Atletas</strong></li>
+  </ul>
+</nav>
+
+<article>
+    <header>
+        <h3 style="margin: 0;">🔍 Buscar Atletas en la Red</h3>
+    </header>
+    <form action="{{ url_for('auth.buscar_usuarios') }}" method="POST" style="margin: 0;">
+        <div class="grid">
+            <input type="text" name="busqueda" value="{{ busqueda }}" placeholder="Introduce el nombre de usuario" required style="margin-bottom: 0;">
+            <button type="submit" style="margin-bottom: 0;">Buscar</button>
+        </div>
+    </form>
+</article>
+
+{% if resultados %}
+    <h4 style="margin-top: 2rem;">Resultados encontrados:</h4>
+    <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+        {% for u in resultados %}
+        <article style="margin-bottom: 0; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--muted-border-color);">
+            <span style="font-size: 1.1rem;">🏋️‍♂️ <strong>@{{ u.username }}</strong></span>
+            
+            <form action="{{ url_for('auth.mandar_solicitud', username_destino=u.username) }}" method="POST" style="margin:0;">
+                <button type="submit" class="outline" style="margin:0; padding: 5px 15px; font-size: 0.9rem;">
+                    Conectar
+                </button>
+            </form>
+        </article>
+        {% endfor %}
+    </div>
+{% elif busqueda %}
+    <article style="text-align: center; color: var(--muted-color); border: 1px dashed var(--muted-border-color);">
+        <p>No se encontró ningún atleta con el nombre "<strong>{{ busqueda }}</strong>".</p>
+    </article>
+{% endif %}
+{% endblock %}

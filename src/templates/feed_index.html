@@ -1,35 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<hgroup>
-    <h2>Muro de la Comunidad 🌎</h2>
-    <h3>Mira lo que otros usuarios están entrenando</h3>
-</hgroup>
+<h2>Muro de la Comunidad 🌎</h2>
+<p><small>Viendo tus entrenamientos y los de tus cuentas conectadas.</small></p>
 
-{% for s in sesiones %}
-<article style="margin-bottom: 20px;">
-    <header>
-        <strong>{{ s.usuario_oid }}</strong> completó <strong>{{ s.nombre_rutina }}</strong>
-        <div style="color: var(--muted-color); font-size: 0.85rem;">{{ s.fecha }} • Duración: {{ s.duracion }}</div>
+{% for s in entrenamientos %}
+<article style="margin-bottom: 2rem;">
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong>💪 @{{ s.usuario_oid }}</strong> completó <strong>{{ s.nombre_rutina }}</strong>
+            <div style="color: var(--muted-color); font-size: 0.8rem;">{{ s.fecha }} • Duración: {{ s.duracion }}</div>
+        </div>
+        <form action="{{ url_for('registros.fuego', oid_sesion=s.__oid__) }}" method="POST" style="margin:0;">
+            <button type="submit" class="{% if current_user.username in s.fuegos %}contrast{% else %}secondary outline{% endif %}" style="padding: 5px 15px; margin:0;">
+                🔥 {{ s.fuegos|length }}
+            </button>
+        </form>
     </header>
     
-    <table role="grid" style="margin-bottom: 0;">
-        <thead>
-            <tr>
-                <th>Ejercicio</th>
-                <th style="text-align: right;">Series Realizadas</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ej in s.ejercicios_data %}
-            <tr>
-                <td>{{ ej.nombre }}</td>
-                <td style="text-align: right;">{{ ej.series|length }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <ul>
+        {% for ej in s.ejercicios_data %}
+        <li><strong>{{ ej.nombre }}</strong>: {{ ej.series|length }} series realizadas</li>
+        {% endfor %}
+    </ul>
+
+    <footer style="background: var(--code-background-color); padding: 1rem; border-radius: 0 0 var(--border-radius) var(--border-radius);">
+        {% if s.comentarios %}
+            <div style="margin-bottom: 1rem; max-height: 150px; overflow-y: auto;">
+                {% for c in s.comentarios %}
+                <p style="margin-bottom: 0.3rem; font-size: 0.9rem;">
+                    <strong>@{{ c.usuario }}:</strong> {{ c.texto }}
+                </p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <form action="{{ url_for('registros.comentar', oid_sesion=s.__oid__) }}" method="POST" style="margin:0; display:flex; gap:10px;">
+            <input type="text" name="comentario" placeholder="Escribe un comentario alentador..." required style="margin:0; flex-grow:1; font-size:0.9rem;">
+            <button type="submit" style="width: auto; margin:0; padding: 0 15px;">💬</button>
+        </form>
+    </footer>
 </article>
 {% else %}
-<p>Aún no hay entrenamientos registrados en la comunidad. ¡Sé el primero en entrenar!</p>
+<article style="text-align: center; color: var(--muted-color);">
+    <p>El muro está tranquilo. Busca amigos con la lupa 🔍 o registra un entreno para romper el hielo.</p>
+</article>
 {% endfor %}
 {% endblock %}

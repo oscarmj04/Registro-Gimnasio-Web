@@ -8,15 +8,20 @@
     </ul>
 </nav>
 
-<form id="form-entrenamiento" action="{{ url_for('rutinas.finalizar', oid_rutina=rutina.__oid__) }}" method="POST">
+<form id="form-entrenamiento" onsubmit="finalizarEntrenamientoFetch(event)">
     <input type="hidden" name="duracion" id="duracion_input" value="00:00">
     
     <div id="entrenamiento-container">
         {% for ej in ejercicios %}
-        <article id="card-{{ ej.oid }}">
+        {% set eid = ej.__oid__|string %}
+        <article id="card-{{ eid }}">
             <header><h4>{{ ej.nombre }}</h4></header>
-            <div id="series-{{ ej.oid }}"></div>
-            <button type="button" class="outline" onclick="addSerie('{{ ej.oid }}')">+ Añadir Serie</button>
+            
+            <input type="hidden" name="ejercicio_id" value="{{ eid }}">
+            <input type="hidden" name="nombre_ejercicio_{{ eid }}" value="{{ ej.nombre }}">
+            
+            <div id="series-{{ eid }}"></div>
+            <button type="button" class="outline" onclick="addSerie('{{ eid }}')">+ Añadir Serie</button>
         </article>
         {% endfor %}
     </div>
@@ -100,6 +105,10 @@ function renderNuevoEjercicio(id, nombre) {
     const html = `
         <article id="card-${id}" style="margin-bottom: 20px;">
             <header><h4>${nombre}</h4></header>
+            
+            <input type="hidden" name="ejercicio_id" value="${id}">
+            <input type="hidden" name="nombre_ejercicio_${id}" value="${nombre}">
+            
             <div id="series-${id}"></div>
             <button type="button" class="outline" onclick="addSerie('${id}')">+ Añadir Serie</button>
         </article>`;
@@ -113,9 +122,11 @@ function addSerie(id) {
     const div = document.createElement('div');
     div.className = "grid serie-row";
     div.style.cssText = "align-items: center; margin-bottom: 10px;";
+    
+    // CORRECCIÓN: Quitamos los '[]' de los nombres para que Flask los intercepte bien
     div.innerHTML = `<strong class="num-serie">S${num}</strong>
-        <input type="number" step="0.5" name="peso_${id}[]" placeholder="Kg" style="margin-bottom:0;">
-        <input type="number" name="reps_${id}[]" placeholder="Reps" style="margin-bottom:0;">
+        <input type="number" step="0.5" name="peso_${id}" placeholder="Kg" style="margin-bottom:0;">
+        <input type="number" name="reps_${id}" placeholder="Reps" style="margin-bottom:0;">
         <button type="button" class="secondary outline" onclick="this.parentElement.remove(); recalcularNumeros(document.getElementById('series-${id}'))" style="margin-bottom:0;">X</button>`;
     container.appendChild(div);
 }
@@ -147,8 +158,28 @@ setInterval(() => {
 // Cargamos series iniciales para ejercicios que ya vinieran en la rutina
 window.onload = () => {
     {% for ej in ejercicios %}
-    addSerie('{{ ej.oid }}');
+    addSerie('{{ ej.__oid__|string }}');
     {% endfor %}
 };
+
+async function finalizarEntrenamientoFetch(event) {
+    event.preventDefault(); // Evitamos que la página se recargue automáticamente
+    
+    const form = document.getElementById('form-entrenamiento');
+    const formData = new FormData(form);
+    
+    // Enviamos los datos al servidor en segundo plano
+    const response = await fetch("{{ url_for('rutinas.finalizar', oid_rutina=rutina.__oid__) }}", {
+        method: 'POST',
+        body: formData
+    });
+    
+    if (response.ok) {
+        // CORRECCIÓN: Redirección al Feed de la comunidad
+        window.location.href = "{{ url_for('registros.feed') }}";
+    } else {
+        alert("Hubo un problema al registrar tu entrenamiento.");
+    }
+}
 </script>
 {% endblock %}

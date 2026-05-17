@@ -1,38 +1,59 @@
 {% extends "base.html" %}
 
 {% block content %}
-<nav>
-    <ul>
-        <li><strong>Catálogo de Ejercicios</strong></li>
-    </ul>
-    <ul>
-        <li><a href="{{ url_for('ejercicios.nuevo') }}" role="button">Añadir Ejercicio</a></li>
-        <li><a href="{{ url_for('auth.dashboard') }}" class="secondary">Volver al Panel</a></li>
-    </ul>
+<nav aria-label="breadcrumb">
+  <ul>
+    <li><a href="{{ url_for('rutinas.index') }}">📋 Rutinas</a></li>
+    <li><strong>Catálogo General de Ejercicios</strong></li>
+  </ul>
 </nav>
 
-<div class="grid">
+<hgroup>
+    <h2>Catálogo General</h2>
+    <p>Consulta todos los movimientos disponibles y tu rendimiento histórico más reciente.</p>
+</hgroup>
+
+<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
     {% for ejercicio in ejercicios %}
-    <article>
-        <header>{{ ejercicio.nombre }}</header>
-        <p><strong>Grupo:</strong> {{ ejercicio.grupo_muscular }}</p>
-        {% if ejercicio.descripcion %}
-            <p>{{ ejercicio.descripcion }}</p>
-        {% else %}
-            <p><small><em>Sin descripción.</em></small></p>
-        {% endif %}
-            <!-- Fíjate cómo usamos un formulario POST para borrar, es más seguro que un enlace -->
-        <footer style="display: flex; gap: 10px;">
-            <form action="{{ url_for('ejercicios.borrar', oid_ejercicio=ejercicio.__oid__, tipo='suave') }}" method="POST" style="margin:0;">
-                <button type="submit" class="secondary outline" style="font-size: 0.8rem;" onclick="return confirm('¿Archivar? No podrás usarlo en nuevas rutinas, pero mantendrás tu historial.');">Archivar</button>
-            </form>
-            <form action="{{ url_for('ejercicios.borrar', oid_ejercicio=ejercicio.__oid__, tipo='duro') }}" method="POST" style="margin:0;">
-                <button type="submit" style="background-color: #d81b60; border: none; font-size: 0.8rem;" onclick="return confirm('¡CUIDADO! Esto borrará el ejercicio y TODO el historial asociado de todos los usuarios.');">Borrar Todo</button>
-            </form>
+    {% set id_string = ejercicio.__oid__|string %}
+    
+    <article style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--muted-border-color);">
+        <header style="padding: 0.75rem 1rem;">
+            <strong style="font-size: 1.1rem;">{{ ejercicio.nombre }}</strong>
+        </header>
+        
+        <div style="padding: 1rem; flex-grow: 1;">
+            <p style="margin-bottom: 0.5rem;"><small>🍿 Grupo Muscular: <strong>{{ ejercicio.grupo_muscular }}</strong></small></p>
+            
+            <div style="background: var(--code-background-color); padding: 0.75rem; border-radius: 5px; margin-top: 1rem;">
+                <p style="margin: 0; font-size: 0.85rem; color: var(--muted-color);"><strong>⏱️ Última vez realizado:</strong></p>
+                {% if marcas[id_string] %}
+                    <p style="margin: 0; font-size: 1.05rem; font-weight: bold; color: var(--primary); margin-top: 5px;">
+                        {{ marcas[id_string]['peso'] }} kg × {{ marcas[id_string]['reps'] }} reps
+                    </p>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--muted-color);">
+                        Fecha del registro: {{ marcas[id_string]['fecha'] }}
+                    </p>
+                {% else %}
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--muted-color); margin-top: 5px;">
+                        <em>Sin series registradas en el historial.</em>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <footer style="padding: 0.5rem 1rem; background: var(--code-background-color); text-align: right;">
+            {% if ejercicio.es_defecto %}
+                <span style="font-size: 0.8rem; color: #388e3c; font-weight: bold;">🔒 Base del Sistema</span>
+            {% else %}
+                <span style="font-size: 0.8rem; color: var(--primary); font-weight: bold;">✨ Creado por ti</span>
+            {% endif %}
         </footer>
     </article>
     {% else %}
-    <p>No hay ejercicios en el catálogo. ¡Añade el primero!</p>
+    <article>
+        <p>No hay ejercicios cargados en el sistema.</p>
+    </article>
     {% endfor %}
 </div>
 {% endblock %}

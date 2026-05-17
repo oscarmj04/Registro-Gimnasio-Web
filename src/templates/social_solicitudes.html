@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>✉️ Solicitudes de Conexión</h3>
+<div class="grid">
+    {% for user_origen in solicitudes %}
+    <article style="padding: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>El atleta <strong>@{{ user_origen }}</strong> quiere ver tus entrenamientos.</span>
+            <div style="display: flex; gap: 10px;">
+                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='aceptar') }}" method="POST" style="margin:0;">
+                    <button type="submit" style="background-color:#388e3c; border:none; padding:5px 15px; margin:0;">Aceptar</button>
+                </form>
+                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='rechazar') }}" method="POST" style="margin:0;">
+                    <button type="submit" class="secondary outline" style="padding:5px 15px; margin:0;">Rechazar</button>
+                </form>
+            </div>
+        </div>
+    </article>
+    {% else %}
+    <article style="text-align: center; color: var(--muted-color);">
+        <p>Tu bandeja de entrada está vacía. No tienes solicitudes pendientes.</p>
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

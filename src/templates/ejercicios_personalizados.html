@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ul>
+    <li><a href="{{ url_for('rutinas.index') }}">Rutinas</a></li>
+    <li><strong>Ejercicios Personalizados</strong></li>
+  </ul>
+</nav>
+
+<article>
+    <header>
+        <h3>✨ Crear Ejercicio Personalizado</h3>
+    </header>
+    <form action="{{ url_for('ejercicios.nuevo_personalizado') }}" method="POST">
+        <div class="grid">
+            <label>Nombre del Ejercicio:
+                <input type="text" name="nombre" placeholder="Ej: Zancadas con Mancuerna" required>
+            </label>
+            <label>Grupo Muscular:
+                <select name="grupo_muscular" required>
+                    <option value="Pecho">Pecho</option>
+                    <option value="Espalda">Espalda</option>
+                    <option value="Pierna">Pierna</option>
+                    <option value="Brazos">Brazos</option>
+                    <option value="Core">Core</option>
+                </select>
+            </label>
+        </div>
+        <label>Descripción (Opcional):
+            <input type="text" name="descripcion" placeholder="Ej: Mantener la espalda recta en cada bajada">
+        </label>
+        <button type="submit" style="width: 100%;">Añadir al Catálogo</button>
+    </form>
+</article>
+
+<h3>📋 Mis Ejercicios Creados</h3>
+<div class="grid">
+    {% for ej in ejercicios %}
+    <article style="padding: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h5 style="margin: 0;">{{ ej.nombre }}</h5>
+                <p style="margin: 0;"><small>🍿 Grupo: <strong>{{ ej.grupo_muscular }}</strong></small></p>
+                {% if ej.descripcion %}
+                    <p style="margin: 0; color: var(--muted-color);"><small>{{ ej.descripcion }}</small></p>
+                {% endif %}
+            </div>
+            
+            <form action="{{ url_for('ejercicios.borrar_total', oid_ejercicio=ej.__oid__) }}" method="POST" style="margin: 0;">
+                <button type="submit" class="secondary outline" style="background-color: #d81b60; color: white; border: none; margin: 0; padding: 5px 15px;" 
+                        onclick="return confirm('¿Seguro que quieres eliminar este ejercicio por completo? Se quitará de todas tus rutinas guardadas.');">
+                    🗑️ Eliminar
+                </button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <article>
+        <p style="text-align: center; color: var(--muted-color);">No has creado ningún ejercicio personalizado todavía. ¡Usa el formulario de arriba!</p>
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}
