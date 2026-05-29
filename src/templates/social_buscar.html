@@ -1,43 +1,52 @@
 {% extends "base.html" %}
-
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ul>
-    <li><a href="{{ url_for('rutinas.index') }}">📋 Rutinas</a></li>
-    <li><strong>Buscar Atletas</strong></li>
-  </ul>
-</nav>
-
-<article>
-    <header>
-        <h3 style="margin: 0;">🔍 Buscar Atletas en la Red</h3>
+<div style="max-width: 600px; margin: 0 auto; width: 100%;">
+    
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-search" style="color: var(--accent-light);"></i> Buscar Atletas
+        </h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Encuentra a tus amigos y expande tu red de entrenamiento.</p>
     </header>
-    <form action="{{ url_for('auth.buscar_usuarios') }}" method="POST" style="margin: 0;">
-        <div class="grid">
-            <input type="text" name="busqueda" value="{{ busqueda }}" placeholder="Introduce el nombre de usuario" required style="margin-bottom: 0;">
-            <button type="submit" style="margin-bottom: 0;">Buscar</button>
+
+    <form action="{{ url_for('auth.buscar_usuarios') }}" method="POST" style="margin-bottom: 32px;">
+        <div style="display: flex; gap: 8px;">
+            <div style="flex-grow: 1; position: relative;">
+                <i class="ti ti-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 18px;"></i>
+                <input type="text" name="busqueda" value="{{ busqueda }}" placeholder="Introduce un nombre de usuario..." required style="padding-left: 38px; margin: 0; height: 100%;">
+            </div>
+            <button type="submit" class="btn-primary" style="margin: 0; white-space: nowrap;">Buscar</button>
         </div>
     </form>
-</article>
 
-{% if resultados %}
-    <h4 style="margin-top: 2rem;">Resultados encontrados:</h4>
-    <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
-        {% for u in resultados %}
-        <article style="margin-bottom: 0; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--muted-border-color);">
-            <span style="font-size: 1.1rem;">🏋️‍♂️ <strong>@{{ u.username }}</strong></span>
-            
-            <form action="{{ url_for('auth.mandar_solicitud', username_destino=u.username) }}" method="POST" style="margin:0;">
-                <button type="submit" class="outline" style="margin:0; padding: 5px 15px; font-size: 0.9rem;">
-                    Conectar
-                </button>
-            </form>
-        </article>
-        {% endfor %}
-    </div>
-{% elif busqueda %}
-    <article style="text-align: center; color: var(--muted-color); border: 1px dashed var(--muted-border-color);">
-        <p>No se encontró ningún atleta con el nombre "<strong>{{ busqueda }}</strong>".</p>
-    </article>
-{% endif %}
+    {% if resultados %}
+        <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 16px;">Resultados</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for u in resultados %}
+            <article class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-muted); color: var(--accent-light); display: flex; justify-content: center; align-items: center; font-weight: 500; font-size: 18px;">
+                        {{ u.username[0]|upper }}
+                    </div>
+                    <span style="font-size: 15px; font-weight: 500; color: var(--text-primary);">@{{ u.username }}</span>
+                </div>
+                
+                <form action="{{ url_for('auth.mandar_solicitud', username_destino=u.username) }}" method="POST" style="margin:0;">
+                    <button type="submit" class="btn-secondary" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px;">
+                        <i class="ti ti-user-plus" style="font-size: 16px;"></i> Conectar
+                    </button>
+                </form>
+            </article>
+            {% endfor %}
+        </div>
+        
+    {% elif busqueda %}
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+            <i class="ti ti-mood-empty" style="font-size: 48px; color: var(--bg-border); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--text-secondary); margin-bottom: 8px;">Sin resultados</h3>
+            <p class="text-faint" style="margin: 0;">No se encontró ningún atleta llamado "<strong>{{ busqueda }}</strong>".</p>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

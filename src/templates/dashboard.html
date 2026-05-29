@@ -1,42 +1,56 @@
 {% extends "base.html" %}
-
 {% block content %}
-<article>
-    <header>
-        <hgroup>
-            <h2>Panel de Control</h2>
-            <h3>¡Bienvenido de nuevo, <strong>{{ username }}</strong>!</h3>
-        </hgroup>
-    </header>
+<div style="max-width: 800px; margin: 0 auto; width: 100%;">
     
-    <div class="grid">
-        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <h4 style="margin-bottom: 0.5rem;">🌎 Feed Social</h4>
-                <p>Mira los entrenamientos de la comunidad, descubre nuevos ejercicios y comparte tus progresos.</p>
-            </div>
-            <a href="{{  url_for('registros.feed') }}" role="button" class="contrast">Ir al Muro</a>
+    <header style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h1 style="margin: 0;">Hola, <span style="color: var(--accent-light);">{{ username }}</span></h1>
+            <p class="text-faint" style="margin: 5px 0 0 0;">¿Qué toca entrenar hoy?</p>
         </div>
-        
-        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <h4 style="margin-bottom: 0.5rem;">📋 Mis Rutinas</h4>
-                <p>Crea rutinas, gestiona tu catálogo personal de ejercicios y empieza a entrenar ahora mismo.</p>
-            </div>
-            <a href="{{ url_for('rutinas.index') }}" role="button">Gestionar Rutinas</a>
+        <div style="background: var(--bg-surface); padding: 12px; border-radius: 50%;">
+            <i class="ti ti-user" style="font-size: 24px; color: var(--accent-light);"></i>
         </div>
+    </header>
 
-        <div style="padding: 1.5rem; border: 1px solid var(--muted-border-color); border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-                <h4 style="margin-bottom: 0.5rem;">🕒 Mi Historial</h4>
-                <p>Consulta tus sesiones pasadas, repasa tus marcas personales y analiza tu evolución.</p>
-            </div>
-            <a href="{{ url_for('registros.index') }}" role="button" class="secondary">Ver Historial</a>
+    <div class="card card-accent" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+        <div style="color: white;">
+            <h3 style="margin: 0 0 5px 0; color: white;">Tus Rutinas de Entrenamiento</h3>
+            <p style="margin: 0; font-size: 13px; opacity: 0.9;">Accede a tus rutinas y empieza a sudar.</p>
         </div>
+        <a href="{{ url_for('rutinas.index') }}" class="btn-primary" style="background: white; color: var(--accent); white-space: nowrap;">
+            Ir a Rutinas <i class="ti ti-arrow-right"></i>
+        </a>
     </div>
 
-    <footer style="margin-top: 2rem; text-align: center;">
-        <p><small>Gym Tracker ALS v2.0 - Modo Social Activado</small></p>
-    </footer>
-</article>
+    <h3 style="margin-bottom: 16px; font-size: 14px; color: var(--text-secondary);">Accesos Rápidos</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+        
+        <a href="{{ url_for('registros.feed') }}" class="card" style="display: block; text-align: left; transition: background 0.2s; text-decoration: none;">
+            <i class="ti ti-flame" style="font-size: 28px; color: var(--warning); margin-bottom: 12px;"></i>
+            <h4 style="margin: 0 0 4px 0; color: var(--text-primary);">Feed de la Comunidad</h4>
+            <p class="text-faint" style="margin: 0; font-size: 12px;">Mira lo que hacen tus amigos</p>
+        </a>
+
+        <a href="{{ url_for('registros.index') }}" class="card" style="display: block; text-align: left; transition: background 0.2s; text-decoration: none;">
+            <i class="ti ti-history" style="font-size: 28px; color: var(--success); margin-bottom: 12px;"></i>
+            <h4 style="margin: 0 0 4px 0; color: var(--text-primary);">Tu Historial</h4>
+            <p class="text-faint" style="margin: 0; font-size: 12px;">Revisa tus últimos entrenamientos</p>
+        </a>
+
+        <a href="{{ url_for('auth.buscar_usuarios') }}" class="card" style="display: block; text-align: left; transition: background 0.2s; text-decoration: none;">
+            <i class="ti ti-search" style="font-size: 28px; color: var(--accent-light); margin-bottom: 12px;"></i>
+            <h4 style="margin: 0 0 4px 0; color: var(--text-primary);">Buscar Atletas</h4>
+            <p class="text-faint" style="margin: 0; font-size: 12px;">Conecta con nuevos usuarios</p>
+        </a>
+
+    </div>
+</div>
+
+<style>
+    /* Efecto hover suave para las tarjetas interactivas */
+    .card[href]:hover {
+        background: var(--bg-elevated);
+    }
+</style>
 {% endblock %}

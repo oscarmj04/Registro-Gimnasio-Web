@@ -1,25 +1,50 @@
 {% extends "base.html" %}
 {% block content %}
-<h3>✉️ Solicitudes de Conexión</h3>
-<div class="grid">
-    {% for user_origen in solicitudes %}
-    <article style="padding: 1rem; margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span>El atleta <strong>@{{ user_origen }}</strong> quiere ver tus entrenamientos.</span>
-            <div style="display: flex; gap: 10px;">
-                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='aceptar') }}" method="POST" style="margin:0;">
-                    <button type="submit" style="background-color:#388e3c; border:none; padding:5px 15px; margin:0;">Aceptar</button>
+<div style="max-width: 600px; margin: 0 auto; width: 100%;">
+    
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-mail" style="color: var(--accent-light);"></i> Solicitudes Recibidas
+        </h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Gestiona tus nuevas conexiones para el muro.</p>
+    </header>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for user_origen in solicitudes %}
+        <article class="card" style="display: flex; flex-direction: column; gap: 16px; border-left: 3px solid var(--accent);">
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent-muted); color: var(--accent-light); display: flex; justify-content: center; align-items: center; font-weight: 500; font-size: 20px;">
+                    {{ user_origen[0]|upper }}
+                </div>
+                <div>
+                    <div style="font-size: 15px; font-weight: 500; color: var(--text-primary);">@{{ user_origen }}</div>
+                    <div class="text-faint" style="font-size: 12px; margin-top: 2px;">Quiere compartir sus entrenamientos contigo</div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='aceptar') }}" method="POST" style="flex: 1; margin: 0;">
+                    <button type="submit" class="btn-primary" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                        <i class="ti ti-check"></i> Aceptar
+                    </button>
                 </form>
-                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='rechazar') }}" method="POST" style="margin:0;">
-                    <button type="submit" class="secondary outline" style="padding:5px 15px; margin:0;">Rechazar</button>
+                
+                <form action="{{ url_for('auth.responder_solicitud', username_origen=user_origen, accion='rechazar') }}" method="POST" style="flex: 1; margin: 0;">
+                    <button type="submit" class="btn-ghost" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 6px; color: var(--text-muted);">
+                        <i class="ti ti-x"></i> Rechazar
+                    </button>
                 </form>
             </div>
+        </article>
+        
+        {% else %}
+        <div class="card" style="text-align: center; padding: 50px 20px;">
+            <i class="ti ti-inbox" style="font-size: 48px; color: var(--bg-border); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--text-secondary); margin-bottom: 8px;">Bandeja al día</h3>
+            <p class="text-faint" style="margin: 0;">No tienes ninguna solicitud de seguimiento pendiente en este momento.</p>
         </div>
-    </article>
-    {% else %}
-    <article style="text-align: center; color: var(--muted-color);">
-        <p>Tu bandeja de entrada está vacía. No tienes solicitudes pendientes.</p>
-    </article>
-    {% endfor %}
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

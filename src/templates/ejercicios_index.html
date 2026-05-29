@@ -1,59 +1,48 @@
 {% extends "base.html" %}
-
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ul>
-    <li><a href="{{ url_for('rutinas.index') }}">📋 Rutinas</a></li>
-    <li><strong>Catálogo General de Ejercicios</strong></li>
-  </ul>
-</nav>
+<div style="max-width: 800px; margin: 0 auto; width: 100%;">
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('rutinas.index') }}" class="text-faint" style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-arrow-left"></i> Volver a Rutinas
+        </a>
+    </div>
 
-<hgroup>
-    <h2>Catálogo General</h2>
-    <p>Consulta todos los movimientos disponibles y tu rendimiento histórico más reciente.</p>
-</hgroup>
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0;">Catálogo General</h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Consulta todos los movimientos y tu último rendimiento.</p>
+    </header>
 
-<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-    {% for ejercicio in ejercicios %}
-    {% set id_string = ejercicio.__oid__|string %}
-    
-    <article style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--muted-border-color);">
-        <header style="padding: 0.75rem 1rem;">
-            <strong style="font-size: 1.1rem;">{{ ejercicio.nombre }}</strong>
-        </header>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {% for ejercicio in ejercicios %}
+        {% set id_string = ejercicio.__oid__|string %}
         
-        <div style="padding: 1rem; flex-grow: 1;">
-            <p style="margin-bottom: 0.5rem;"><small>🍿 Grupo Muscular: <strong>{{ ejercicio.grupo_muscular }}</strong></small></p>
-            
-            <div style="background: var(--code-background-color); padding: 0.75rem; border-radius: 5px; margin-top: 1rem;">
-                <p style="margin: 0; font-size: 0.85rem; color: var(--muted-color);"><strong>⏱️ Última vez realizado:</strong></p>
-                {% if marcas[id_string] %}
-                    <p style="margin: 0; font-size: 1.05rem; font-weight: bold; color: var(--primary); margin-top: 5px;">
-                        {{ marcas[id_string]['peso'] }} kg × {{ marcas[id_string]['reps'] }} reps
-                    </p>
-                    <p style="margin: 0; font-size: 0.75rem; color: var(--muted-color);">
-                        Fecha del registro: {{ marcas[id_string]['fecha'] }}
-                    </p>
+        <article class="card" style="display: flex; flex-direction: column;">
+            <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <h3 style="margin: 0; font-size: 15px;">{{ ejercicio.nombre }}</h3>
+                {% if ejercicio.es_defecto %}
+                    <span class="tag" style="background: var(--bg-elevated); color: var(--text-muted);">Base</span>
                 {% else %}
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--muted-color); margin-top: 5px;">
-                        <em>Sin series registradas en el historial.</em>
-                    </p>
+                    <span class="tag" style="background: var(--accent-muted); color: var(--accent-light);">Tuyo</span>
+                {% endif %}
+            </header>
+            
+            <p class="text-faint" style="margin: 0 0 16px 0;">Grupo: <strong style="color: var(--text-secondary);">{{ ejercicio.grupo_muscular }}</strong></p>
+
+            <div class="card-inner" style="margin-top: auto;">
+                <div class="text-faint" style="font-size: 11px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                    <i class="ti ti-stopwatch"></i> Última vez realizado:
+                </div>
+                {% if marcas[id_string] %}
+                    <div style="color: var(--warning); font-weight: 500; font-size: 15px; margin-bottom: 2px;">
+                        {{ marcas[id_string]['peso'] }} kg × {{ marcas[id_string]['reps'] }} reps
+                    </div>
+                    <div class="text-faint" style="font-size: 11px;">{{ marcas[id_string]['fecha'] }}</div>
+                {% else %}
+                    <div class="text-faint" style="font-style: italic; font-size: 12px; margin-top: 4px;">Sin registros recientes.</div>
                 {% endif %}
             </div>
-        </div>
-
-        <footer style="padding: 0.5rem 1rem; background: var(--code-background-color); text-align: right;">
-            {% if ejercicio.es_defecto %}
-                <span style="font-size: 0.8rem; color: #388e3c; font-weight: bold;">🔒 Base del Sistema</span>
-            {% else %}
-                <span style="font-size: 0.8rem; color: var(--primary); font-weight: bold;">✨ Creado por ti</span>
-            {% endif %}
-        </footer>
-    </article>
-    {% else %}
-    <article>
-        <p>No hay ejercicios cargados en el sistema.</p>
-    </article>
-    {% endfor %}
+        </article>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

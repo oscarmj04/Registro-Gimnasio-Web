@@ -1,48 +1,86 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Muro de la Comunidad 🌎</h2>
-<p><small>Viendo tus entrenamientos y los de tus cuentas conectadas.</small></p>
-
-{% for s in entrenamientos %}
-<article style="margin-bottom: 2rem;">
-    <header style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-            <strong>💪 @{{ s.usuario_oid }}</strong> completó <strong>{{ s.nombre_rutina }}</strong>
-            <div style="color: var(--muted-color); font-size: 0.8rem;">{{ s.fecha }} • Duración: {{ s.duracion }}</div>
-        </div>
-        <form action="{{ url_for('registros.fuego', oid_sesion=s.__oid__) }}" method="POST" style="margin:0;">
-            <button type="submit" class="{% if current_user.username in s.fuegos %}contrast{% else %}secondary outline{% endif %}" style="padding: 5px 15px; margin:0;">
-                🔥 {{ s.fuegos|length }}
-            </button>
-        </form>
-    </header>
+<div style="max-width: 600px; margin: 0 auto; width: 100%;">
     
-    <ul>
-        {% for ej in s.ejercicios_data %}
-        <li><strong>{{ ej.nombre }}</strong>: {{ ej.series|length }} series realizadas</li>
-        {% endfor %}
-    </ul>
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-world" style="color: var(--accent-light);"></i> Muro de la Comunidad
+        </h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Inspiración diaria de tus conexiones.</p>
+    </header>
 
-    <footer style="background: var(--code-background-color); padding: 1rem; border-radius: 0 0 var(--border-radius) var(--border-radius);">
-        {% if s.comentarios %}
-            <div style="margin-bottom: 1rem; max-height: 150px; overflow-y: auto;">
-                {% for c in s.comentarios %}
-                <p style="margin-bottom: 0.3rem; font-size: 0.9rem;">
-                    <strong>@{{ c.usuario }}:</strong> {{ c.texto }}
-                </p>
-                {% endfor %}
+    {% for s in entrenamientos %}
+    <article class="card" style="margin-bottom: 20px;">
+        <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--accent-muted); color: var(--accent-light); display: flex; justify-content: center; align-items: center; font-weight: 500; font-size: 18px;">
+                    {{ s.usuario_oid[0]|upper }}
+                </div>
+                <div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">
+                        @{{ s.usuario_oid }}
+                    </div>
+                    <div class="text-faint" style="font-size: 12px; display: flex; gap: 6px; align-items: center;">
+                        <i class="ti ti-calendar-event" style="font-size: 14px;"></i> {{ s.fecha }} 
+                        <span>•</span> 
+                        <i class="ti ti-clock" style="font-size: 14px;"></i> {{ s.duracion }}
+                    </div>
+                </div>
             </div>
-        {% endif %}
+            
+            <form action="{{ url_for('registros.fuego', oid_sesion=s.__oid__) }}" method="POST" style="margin:0;">
+                <button type="submit" class="btn-secondary" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; {% if current_user.username in s.fuegos %}color: var(--warning); border-color: var(--warning-muted); background: var(--warning-muted);{% endif %}">
+                    <i class="ti ti-flame" style="font-size: 16px; {% if current_user.username in s.fuegos %}fill: var(--warning);{% endif %}"></i> 
+                    <span style="font-weight: 500;">{{ s.fuegos|length }}</span>
+                </button>
+            </form>
+        </header>
         
-        <form action="{{ url_for('registros.comentar', oid_sesion=s.__oid__) }}" method="POST" style="margin:0; display:flex; gap:10px;">
-            <input type="text" name="comentario" placeholder="Escribe un comentario alentador..." required style="margin:0; flex-grow:1; font-size:0.9rem;">
-            <button type="submit" style="width: auto; margin:0; padding: 0 15px;">💬</button>
-        </form>
-    </footer>
-</article>
-{% else %}
-<article style="text-align: center; color: var(--muted-color);">
-    <p>El muro está tranquilo. Busca amigos con la lupa 🔍 o registra un entreno para romper el hielo.</p>
-</article>
-{% endfor %}
+        <div style="margin-bottom: 16px;">
+            <span class="tag-success" style="display: inline-block; margin-bottom: 8px;">
+                <i class="ti ti-check" style="font-size: 12px; margin-right: 4px;"></i>Entrenamiento Completado
+            </span>
+            <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">{{ s.nombre_rutina }}</h3>
+        </div>
+
+        <div class="card-inner" style="margin-bottom: 16px;">
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                {% for ej in s.ejercicios_data %}
+                <li style="display: flex; justify-content: space-between; font-size: 13px; align-items: center; border-bottom: 1px solid var(--bg-border); padding-bottom: 6px; margin-bottom: 2px;">
+                    <span style="color: var(--text-secondary);"><i class="ti ti-barbell" style="font-size: 14px; margin-right: 6px; color: var(--text-muted);"></i>{{ ej.nombre }}</span>
+                    <span style="color: var(--text-muted); font-weight: 500;">{{ ej.series|length }} series</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div style="border-top: 1px solid var(--bg-border); padding-top: 16px;">
+            {% if s.comentarios %}
+                <div style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 10px;">
+                    {% for c in s.comentarios %}
+                    <div style="font-size: 13px; display: flex; gap: 8px; align-items: flex-start;">
+                        <span style="color: var(--text-secondary); font-weight: 500; white-space: nowrap;">@{{ c.usuario }}</span> 
+                        <span style="color: var(--text-muted); line-height: 1.4;">{{ c.texto }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form action="{{ url_for('registros.comentar', oid_sesion=s.__oid__) }}" method="POST" style="display: flex; gap: 8px; margin: 0; align-items: center;">
+                <input type="text" name="comentario" placeholder="Animar a {{ s.usuario_oid }}..." required style="background: transparent; border: 1px solid var(--bg-border); font-size: 13px; flex-grow: 1; margin: 0;">
+                <button type="submit" class="btn-ghost" style="padding: 8px 12px; margin: 0; height: 100%; display: flex; align-items: center; justify-content: center;">
+                    <i class="ti ti-send" style="font-size: 18px; color: var(--accent-light);"></i>
+                </button>
+            </form>
+        </div>
+    </article>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 40px 20px;">
+        <i class="ti ti-users" style="font-size: 48px; color: var(--bg-border); margin-bottom: 16px;"></i>
+        <h3 style="color: var(--text-secondary);">Tu feed está muy tranquilo</h3>
+        <p class="text-faint" style="margin-bottom: 20px;">Busca a otros atletas para ver sus entrenamientos aquí.</p>
+        <a href="{{ url_for('auth.buscar_usuarios') }}" class="btn-secondary">Buscar usuarios</a>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

@@ -1,82 +1,45 @@
 {% extends "base.html" %}
 {% block content %}
-<article>
-    <header>
-        <h3>Editar Rutina: {{ rutina.nombre }}</h3>
+<div style="max-width: 600px; margin: 0 auto; width: 100%;">
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('rutinas.index') }}" class="text-faint" style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-arrow-left"></i> Volver a Rutinas
+        </a>
+    </div>
+
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0;">Editar Rutina</h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Modifica los ejercicios de tu rutina.</p>
     </header>
 
-    <form action="{{ url_for('rutinas.actualizar', oid_rutina=rutina.__oid__) }}" method="POST">
-        <label>Nombre de la rutina:
-            <input type="text" name="nombre" value="{{ rutina.nombre }}" required>
-        </label>
-
-        <h5>Ejercicios en la rutina (Arrastra o usa las flechas)</h5>
-        <div id="lista-edicion" style="margin-bottom: 20px;">
-            {% for ej in ejercicios %}
-            <article style="padding: 10px; margin-bottom: 10px; border: 1px solid var(--muted-border-color);" class="item-ejercicio">
-                <div class="grid" style="align-items: center; margin-bottom: 0;">
-                    <div style="flex-grow: 1;">
-                        <strong>{{ ej.nombre }}</strong>
-                        <input type="hidden" name="ejercicios_seleccionados" value="{{ ej.__oid__ }}">
-                    </div>
-                    <div style="display: flex; gap: 5px;">
-                        <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, -1)">↑</button>
-                        <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, 1)">↓</button>
-                        <button type="button" style="background-color: #d81b60; border:none; padding: 2px 10px;" onclick="this.closest('article').remove()">Eliminar</button>
-                    </div>
-                </div>
-            </article>
-            {% endfor %}
+    <form action="{{ url_for('rutinas.actualizar', oid_rutina=rutina.__oid__) }}" method="POST" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div class="card">
+            <label for="nombre">Nombre de la Rutina</label>
+            <input type="text" name="nombre" id="nombre" value="{{ rutina.nombre }}" required>
         </div>
 
-        <hr>
-        <label><strong>Añadir ejercicio del catálogo:</strong></label>
-        <div class="grid">
-            <select id="sel-catalogo">
-                {% for c in catalogo %}
-                <option value="{{ c.__oid__ }}">{{ c.nombre }}</option>
+        <div>
+            <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-secondary);">Selecciona los ejercicios</h3>
+            <div class="card" style="max-height: 400px; overflow-y: auto; padding: 0;">
+                {% for ej in catalogo %}
+                <label style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--bg-border); margin: 0; cursor: pointer;">
+                    <input type="checkbox" name="ejercicios_seleccionados" value="{{ ej.__oid__ }}" 
+                           {% if ej.__oid__|string in rutina.lista_ejercicios_oids %}checked{% endif %}
+                           style="width: 18px; height: 18px; margin: 0;">
+                    
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: var(--text-primary); font-size: 14px;">{{ ej.nombre }}</span>
+                        <span class="text-faint" style="font-size: 11px;">{{ ej.grupo_muscular }}</span>
+                    </div>
+                </label>
                 {% endfor %}
-            </select>
-            <button type="button" onclick="añadirAlEditor()">+ Añadir</button>
+            </div>
         </div>
 
-        <footer class="grid">
-            <button type="submit">Guardar Cambios</button>
-            <a href="{{ url_for('rutinas.index') }}" role="button" class="secondary outline">Cancelar</a>
-        </footer>
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 12px; font-size: 14px;">
+            <i class="ti ti-device-floppy"></i> Guardar Cambios
+        </button>
     </form>
-</article>
-
-<script>
-function mover(btn, direccion) {
-    const item = btn.closest('.item-ejercicio');
-    if (direccion === -1 && item.previousElementSibling) {
-        item.parentNode.insertBefore(item, item.previousElementSibling);
-    } else if (direccion === 1 && item.nextElementSibling) {
-        item.parentNode.insertBefore(item.nextElementSibling, item);
-    }
-}
-
-function añadirAlEditor() {
-    const sel = document.getElementById('sel-catalogo');
-    const id = sel.value;
-    const nombre = sel.options[sel.selectedIndex].text;
-    
-    const html = `
-        <article style="padding: 10px; margin-bottom: 10px; border: 1px solid var(--muted-border-color);" class="item-ejercicio">
-            <div class="grid" style="align-items: center; margin-bottom: 0;">
-                <div style="flex-grow: 1;">
-                    <strong>${nombre}</strong>
-                    <input type="hidden" name="ejercicios_seleccionados" value="${id}">
-                </div>
-                <div style="display: flex; gap: 5px;">
-                    <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, -1)">↑</button>
-                    <button type="button" class="secondary outline" style="padding: 2px 10px;" onclick="mover(this, 1)">↓</button>
-                    <button type="button" style="background-color: #d81b60; border:none; padding: 2px 10px;" onclick="this.closest('article').remove()">Eliminar</button>
-                </div>
-            </div>
-        </article>`;
-    document.getElementById('lista-edicion').insertAdjacentHTML('beforeend', html);
-}
-</script>
+</div>
 {% endblock %}

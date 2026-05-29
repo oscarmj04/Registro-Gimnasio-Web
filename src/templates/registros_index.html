@@ -1,39 +1,39 @@
 {% extends "base.html" %}
-
 {% block content %}
-<nav>
-    <ul>
-        <li><strong>🕒 Mi Historial Personal</strong></li>
-    </ul>
-    <ul>
-        <li><a href="{{ url_for('rutinas.index') }}" class="secondary">Volver a Rutinas</a></li>
-    </ul>
-</nav>
+<div style="max-width: 800px; margin: 0 auto; width: 100%;">
+    
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-history" style="color: var(--accent-light);"></i> Tu Historial
+        </h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Repasa tus sesiones anteriores y analiza tu progreso.</p>
+    </header>
 
-<div class="grid">
-    {% for sesion in sesiones %}
-    <article style="margin-bottom: 20px;">
-        <header>
-            <h4 style="margin-bottom: 0;">{{ sesion.nombre_rutina }}</h4>
-            <small>{{ sesion.fecha }}</small>
-        </header>
-        
-        <p>
-            <strong>Duración:</strong> {{ sesion.duracion }}<br>
-            <strong>Ejercicios:</strong> {{ sesion.ejercicios_data|length }} realizados
-        </p>
-        
-        <footer style="display: flex; gap: 10px; margin-top: 10px;">
-            <a href="{{ url_for('registros.detalle', oid_sesion=sesion.__oid__) }}" role="button" style="width: 100%;">Ver Detalles</a>
-            <form action="{{ url_for('registros.borrar_sesion', oid_sesion=sesion.__oid__) }}" method="POST" style="margin:0;">
-                <button type="submit" style="background-color: #d81b60; border: none;" onclick="return confirm('¿Borrar este entrenamiento del historial?');">Borrar</button>
-            </form>
-        </footer>
-    </article>
-    {% else %}
-    <article>
-        <p>Aún no tienes entrenamientos guardados. ¡Empieza uno desde la pestaña de Rutinas!</p>
-    </article>
-    {% endfor %}
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+        {% for s in sesiones %}
+        <article class="card" style="border-left: 3px solid {% if loop.first %}var(--accent){% else %}var(--bg-border){% endif %}; display: flex; justify-content: space-between; align-items: center; border-radius: 0 12px 12px 0;">
+            <div>
+                <h3 style="margin: 0 0 6px 0; font-size: 16px; color: var(--text-primary);">{{ s.nombre_rutina }}</h3>
+                <div class="text-faint" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12px;">
+                    <span style="display: flex; align-items: center; gap: 4px;"><i class="ti ti-calendar-event"></i> {{ s.fecha }}</span>
+                    <span style="display: flex; align-items: center; gap: 4px;"><i class="ti ti-clock"></i> {{ s.duracion }}</span>
+                    <span style="display: flex; align-items: center; gap: 4px;"><i class="ti ti-barbell"></i> {{ s.ejercicios_data|length }} ej.</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="{{ url_for('registros.detalle', oid_sesion=s.__oid__) }}" class="btn-secondary" style="padding: 8px 12px; display: flex; align-items: center; gap: 4px;">
+                    <i class="ti ti-eye"></i> Detalle
+                </a>
+            </div>
+        </article>
+        {% else %}
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+            <i class="ti ti-history" style="font-size: 48px; color: var(--bg-border); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--text-secondary);">Sin entrenamientos</h3>
+            <p class="text-faint">Aún no has completado ninguna sesión. ¡Ve a Planes y empieza a sudar!</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

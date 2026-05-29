@@ -1,63 +1,72 @@
 {% extends "base.html" %}
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ul>
-    <li><a href="{{ url_for('rutinas.index') }}">Rutinas</a></li>
-    <li><strong>Ejercicios Personalizados</strong></li>
-  </ul>
-</nav>
+<div style="max-width: 700px; margin: 0 auto; width: 100%;">
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('rutinas.index') }}" class="text-faint" style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-arrow-left"></i> Volver a Rutinas
+        </a>
+    </div>
 
-<article>
-    <header>
-        <h3>✨ Crear Ejercicio Personalizado</h3>
-    </header>
-    <form action="{{ url_for('ejercicios.nuevo_personalizado') }}" method="POST">
-        <div class="grid">
-            <label>Nombre del Ejercicio:
-                <input type="text" name="nombre" placeholder="Ej: Zancadas con Mancuerna" required>
-            </label>
-            <label>Grupo Muscular:
-                <select name="grupo_muscular" required>
-                    <option value="Pecho">Pecho</option>
-                    <option value="Espalda">Espalda</option>
-                    <option value="Pierna">Pierna</option>
-                    <option value="Brazos">Brazos</option>
-                    <option value="Core">Core</option>
-                </select>
-            </label>
-        </div>
-        <label>Descripción (Opcional):
-            <input type="text" name="descripcion" placeholder="Ej: Mantener la espalda recta en cada bajada">
-        </label>
-        <button type="submit" style="width: 100%;">Añadir al Catálogo</button>
-    </form>
-</article>
-
-<h3>📋 Mis Ejercicios Creados</h3>
-<div class="grid">
-    {% for ej in ejercicios %}
-    <article style="padding: 1rem; margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h5 style="margin: 0;">{{ ej.nombre }}</h5>
-                <p style="margin: 0;"><small>🍿 Grupo: <strong>{{ ej.grupo_muscular }}</strong></small></p>
-                {% if ej.descripcion %}
-                    <p style="margin: 0; color: var(--muted-color);"><small>{{ ej.descripcion }}</small></p>
-                {% endif %}
+    <section style="margin-bottom: 32px;">
+        <header style="margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);"><i class="ti ti-wand" style="color: var(--accent-light);"></i> Crear Movimiento</h3>
+        </header>
+        
+        <form action="{{ url_for('ejercicios.nuevo_personalizado') }}" method="POST" class="card" style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <label>Nombre del Ejercicio</label>
+                    <input type="text" name="nombre" placeholder="Ej: Curl Araña" required>
+                </div>
+                <div>
+                    <label>Grupo Muscular</label>
+                    <select name="grupo_muscular" required>
+                        <option value="Pecho">Pecho</option>
+                        <option value="Espalda">Espalda</option>
+                        <option value="Pierna">Pierna</option>
+                        <option value="Brazos">Brazos</option>
+                        <option value="Core">Core</option>
+                    </select>
+                </div>
             </div>
-            
-            <form action="{{ url_for('ejercicios.borrar_total', oid_ejercicio=ej.__oid__) }}" method="POST" style="margin: 0;">
-                <button type="submit" class="secondary outline" style="background-color: #d81b60; color: white; border: none; margin: 0; padding: 5px 15px;" 
-                        onclick="return confirm('¿Seguro que quieres eliminar este ejercicio por completo? Se quitará de todas tus rutinas guardadas.');">
-                    🗑️ Eliminar
-                </button>
-            </form>
+            <div>
+                <label>Descripción / Notas (Opcional)</label>
+                <input type="text" name="descripcion" placeholder="Ej: Mantener retracción escapular">
+            </div>
+            <button type="submit" class="btn-primary" style="align-self: flex-start;">Añadir al Catálogo</button>
+        </form>
+    </section>
+
+    <section>
+        <header style="margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 16px; color: var(--text-primary);">Tus Ejercicios Creados</h3>
+        </header>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for ej in ejercicios %}
+            <article class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0 0 4px 0; font-size: 15px;">{{ ej.nombre }}</h4>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="tag">{{ ej.grupo_muscular }}</span>
+                        {% if ej.descripcion %}
+                            <span class="text-faint" style="font-size: 11px;">{{ ej.descripcion }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <form action="{{ url_for('ejercicios.borrar_total', oid_ejercicio=ej.__oid__) }}" method="POST" style="margin: 0;">
+                    <button type="submit" class="btn-ghost" style="color: var(--warning);" onclick="return confirm('¿Seguro que quieres eliminar este ejercicio por completo?');">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </form>
+            </article>
+            {% else %}
+            <div class="card" style="text-align: center; padding: 30px;">
+                <p class="text-faint" style="margin: 0;">No has creado ningún ejercicio personalizado todavía.</p>
+            </div>
+            {% endfor %}
         </div>
-    </article>
-    {% else %}
-    <article>
-        <p style="text-align: center; color: var(--muted-color);">No has creado ningún ejercicio personalizado todavía. ¡Usa el formulario de arriba!</p>
-    </article>
-    {% endfor %}
+    </section>
 </div>
 {% endblock %}

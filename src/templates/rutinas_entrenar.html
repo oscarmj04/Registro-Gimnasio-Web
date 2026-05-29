@@ -1,76 +1,119 @@
 {% extends "base.html" %}
 {% block content %}
-<nav>
-    <ul><li><strong>Entrenando: {{ rutina.nombre }}</strong></li></ul>
-    <ul>
-        <li><span id="timer" style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">00:00</span></li>
-        <li><a href="{{ url_for('rutinas.index') }}" class="secondary" onclick="return confirm('¿Seguro que quieres salir?');">Cancelar</a></li>
-    </ul>
-</nav>
+<style>
+    /* Estilos específicos para el modal nativo en Dark Mode */
+    dialog {
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border: 1px solid var(--bg-border);
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 400px;
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
+    /* Ocultamos los selectores numéricos (flechitas) de los inputs para un look más limpio */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
 
-<form id="form-entrenamiento" onsubmit="finalizarEntrenamientoFetch(event)">
-    <input type="hidden" name="duracion" id="duracion_input" value="00:00">
+<div style="max-width: 600px; margin: 0 auto; width: 100%; padding-bottom: 80px;">
     
-    <div id="entrenamiento-container">
-        {% for ej in ejercicios %}
-        {% set eid = ej.__oid__|string %}
-        <article id="card-{{ eid }}">
-            <header><h4>{{ ej.nombre }}</h4></header>
-            
-            <input type="hidden" name="ejercicio_id" value="{{ eid }}">
-            <input type="hidden" name="nombre_ejercicio_{{ eid }}" value="{{ ej.nombre }}">
-            
-            <div id="series-{{ eid }}"></div>
-            <button type="button" class="outline" onclick="addSerie('{{ eid }}')">+ Añadir Serie</button>
-        </article>
-        {% endfor %}
-    </div>
-
-    <hr>
-    <div style="background: var(--card-background-color); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-        <label><strong>¿Añadir ejercicio al entrenamiento?</strong></label>
-        <div class="grid">
-            <select id="sel-ej">
-                <option value="">-- Selecciona del catálogo --</option>
-                {% for c in catalogo %}
-                <option value="{{ c.__oid__ }}">{{ c.nombre }}</option>
-                {% endfor %}
-            </select>
-            <button type="button" onclick="addEjercicio()">Añadir</button>
-            <button type="button" class="secondary outline" onclick="document.getElementById('modal-nuevo-ejercicio').showModal()">✨ Crear nuevo</button>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--bg-border);">
+        <div>
+            <h2 style="margin: 0; font-size: 18px;">{{ rutina.nombre }}</h2>
+            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success);"></span>
+                <span class="text-faint">Entrenamiento en curso</span>
+            </div>
         </div>
-    </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span id="timer" style="color: var(--accent-light); font-weight: 500; font-size: 20px; letter-spacing: 1px; font-variant-numeric: tabular-nums;">00:00</span>
+            <a href="{{ url_for('rutinas.index') }}" class="btn-ghost" style="padding: 8px; border: none;" onclick="return confirm('¿Seguro que quieres abortar el entrenamiento? Perderás los datos.');" title="Cancelar">
+                <i class="ti ti-x" style="font-size: 20px;"></i>
+            </a>
+        </div>
+    </header>
 
-    <button type="submit" style="background-color: #388e3c; border: none; width: 100%;">🏁 Finalizar Entrenamiento</button>
-</form>
+    <form id="form-entrenamiento" onsubmit="finalizarEntrenamientoFetch(event)">
+        <input type="hidden" name="duracion" id="duracion_input" value="00:00">
+        
+        <div id="entrenamiento-container" style="display: flex; flex-direction: column; gap: 20px;">
+            {% for ej in ejercicios %}
+            {% set eid = ej.__oid__|string %}
+            <article class="card" id="card-{{ eid }}" style="border-left: 3px solid var(--accent);">
+                <header style="margin-bottom: 16px;">
+                    <h4 style="margin: 0; font-size: 15px;">{{ ej.nombre }}</h4>
+                </header>
+                
+                <input type="hidden" name="ejercicio_id" value="{{ eid }}">
+                <input type="hidden" name="nombre_ejercicio_{{ eid }}" value="{{ ej.nombre }}">
+                
+                <div id="series-{{ eid }}" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;"></div>
+                
+                <button type="button" class="btn-secondary" onclick="addSerie('{{ eid }}')" style="width: 100%; border-style: dashed;">
+                    <i class="ti ti-plus"></i> Añadir Serie
+                </button>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="card-inner" style="margin-top: 32px; margin-bottom: 32px;">
+            <label style="color: var(--text-primary); font-weight: 500; margin-bottom: 12px; display: block;">¿Añadir ejercicio sobre la marcha?</label>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; gap: 8px;">
+                    <select id="sel-ej" style="flex-grow: 1;">
+                        <option value="">-- Catálogo --</option>
+                        {% for c in catalogo %}
+                        <option value="{{ c.__oid__ }}">{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="addEjercicio()">Añadir</button>
+                </div>
+                <button type="button" class="btn-ghost" onclick="document.getElementById('modal-nuevo-ejercicio').showModal()">
+                    <i class="ti ti-wand"></i> Crear ejercicio nuevo
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-success" style="width: 100%; padding: 14px; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <i class="ti ti-check"></i> Finalizar y Publicar
+        </button>
+    </form>
+</div>
 
 <dialog id="modal-nuevo-ejercicio">
-  <article>
-    <header>
-      <a href="#close" aria-label="Close" class="close" onclick="document.getElementById('modal-nuevo-ejercicio').close()"></a>
-      <h5>Crear nuevo ejercicio para el catálogo</h5>
-    </header>
-    <label>Nombre
-        <input type="text" id="modal-nombre" placeholder="Ej: Press Militar">
-    </label>
-    <label>Grupo Muscular
-        <select id="modal-grupo">
-            <option value="Pecho">Pecho</option>
-            <option value="Espalda">Espalda</option>
-            <option value="Pierna">Pierna</option>
-            <option value="Brazos">Brazos</option>
-            <option value="Core">Core</option>
-        </select>
-    </label>
-    <footer>
-      <button class="secondary" onclick="document.getElementById('modal-nuevo-ejercicio').close()">Cancelar</button>
-      <button onclick="guardarEjercicioAjax()">Guardar y Añadir</button>
-    </footer>
-  </article>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h5 style="margin: 0; font-size: 16px;">Nuevo Ejercicio</h5>
+      <button class="btn-ghost" style="padding: 4px; border: none;" onclick="document.getElementById('modal-nuevo-ejercicio').close()">
+          <i class="ti ti-x"></i>
+      </button>
+  </div>
+  
+  <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+      <div>
+          <label>Nombre</label>
+          <input type="text" id="modal-nombre" placeholder="Ej: Press Militar">
+      </div>
+      <div>
+          <label>Grupo Muscular</label>
+          <select id="modal-grupo">
+              <option value="Pecho">Pecho</option>
+              <option value="Espalda">Espalda</option>
+              <option value="Pierna">Pierna</option>
+              <option value="Brazos">Brazos</option>
+              <option value="Core">Core</option>
+          </select>
+      </div>
+  </div>
+  
+  <div style="display: flex; gap: 12px;">
+      <button class="btn-ghost" style="flex: 1;" onclick="document.getElementById('modal-nuevo-ejercicio').close()">Cancelar</button>
+      <button class="btn-primary" style="flex: 1;" onclick="guardarEjercicioAjax()">Guardar</button>
+  </div>
 </dialog>
 
 <script>
-// FUNCIÓN PARA GUARDAR POR AJAX
 async function guardarEjercicioAjax() {
     const nombre = document.getElementById('modal-nombre').value;
     const grupo = document.getElementById('modal-grupo').value;
@@ -85,15 +128,14 @@ async function guardarEjercicioAjax() {
 
     if (response.ok) {
         const data = await response.json();
-        // 1. Añadirlo a la interfaz de entrenamiento
         renderNuevoEjercicio(data.oid, data.nombre);
-        // 2. Añadirlo al selector por si quiere añadirlo otra vez luego
+        
         const sel = document.getElementById('sel-ej');
         const opt = document.createElement('option');
         opt.value = data.oid;
         opt.text = data.nombre;
         sel.add(opt);
-        // 3. Cerrar modal y limpiar
+        
         document.getElementById('modal-nuevo-ejercicio').close();
         document.getElementById('modal-nombre').value = "";
     } else {
@@ -103,31 +145,36 @@ async function guardarEjercicioAjax() {
 
 function renderNuevoEjercicio(id, nombre) {
     const html = `
-        <article id="card-${id}" style="margin-bottom: 20px;">
-            <header><h4>${nombre}</h4></header>
-            
+        <article class="card" id="card-${id}" style="border-left: 3px solid var(--accent); margin-bottom: 20px;">
+            <header style="margin-bottom: 16px;"><h4 style="margin: 0; font-size: 15px;">${nombre}</h4></header>
             <input type="hidden" name="ejercicio_id" value="${id}">
             <input type="hidden" name="nombre_ejercicio_${id}" value="${nombre}">
-            
-            <div id="series-${id}"></div>
-            <button type="button" class="outline" onclick="addSerie('${id}')">+ Añadir Serie</button>
+            <div id="series-${id}" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;"></div>
+            <button type="button" class="btn-secondary" onclick="addSerie('${id}')" style="width: 100%; border-style: dashed;">
+                <i class="ti ti-plus"></i> Añadir Serie
+            </button>
         </article>`;
     document.getElementById('entrenamiento-container').insertAdjacentHTML('beforeend', html);
-    addSerie(id); // Añadimos la primera serie automáticamente
+    addSerie(id);
 }
 
 function addSerie(id) {
     const container = document.getElementById(`series-${id}`);
     const num = container.children.length + 1;
     const div = document.createElement('div');
-    div.className = "grid serie-row";
-    div.style.cssText = "align-items: center; margin-bottom: 10px;";
     
-    // CORRECCIÓN: Quitamos los '[]' de los nombres para que Flask los intercepte bien
-    div.innerHTML = `<strong class="num-serie">S${num}</strong>
-        <input type="number" step="0.5" name="peso_${id}" placeholder="Kg" style="margin-bottom:0;">
-        <input type="number" name="reps_${id}" placeholder="Reps" style="margin-bottom:0;">
-        <button type="button" class="secondary outline" onclick="this.parentElement.remove(); recalcularNumeros(document.getElementById('series-${id}'))" style="margin-bottom:0;">X</button>`;
+    /* Diseño de la fila de la serie: Bullet violeta, Inputs limpios, Botón de borrado */
+    div.style.cssText = "display: flex; align-items: center; gap: 8px;";
+    div.innerHTML = `
+        <div class="num-serie" style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0;">
+            S${num}
+        </div>
+        <input type="number" step="0.5" name="peso_${id}" placeholder="Kg" style="margin: 0; text-align: center; flex: 1;">
+        <input type="number" name="reps_${id}" placeholder="Reps" style="margin: 0; text-align: center; flex: 1;">
+        <button type="button" class="btn-ghost" onclick="this.parentElement.remove(); recalcularNumeros(document.getElementById('series-${id}'))" style="padding: 8px; border: none; color: var(--text-faint);">
+            <i class="ti ti-trash"></i>
+        </button>
+    `;
     container.appendChild(div);
 }
 
@@ -141,7 +188,7 @@ function addEjercicio() {
     const id = sel.value;
     const nombre = sel.options[sel.selectedIndex].text;
     if(!id) return;
-    if(document.getElementById(`card-${id}`)) { alert("Ya está en la lista"); return; }
+    if(document.getElementById(`card-${id}`)) { alert("El ejercicio ya está en la sesión actual."); return; }
     renderNuevoEjercicio(id, nombre);
     sel.value = "";
 }
@@ -155,7 +202,7 @@ setInterval(() => {
     document.getElementById('duracion_input').value = txt;
 }, 1000);
 
-// Cargamos series iniciales para ejercicios que ya vinieran en la rutina
+// Iniciar con 1 serie por cada ejercicio cargado
 window.onload = () => {
     {% for ej in ejercicios %}
     addSerie('{{ ej.__oid__|string }}');
@@ -163,22 +210,27 @@ window.onload = () => {
 };
 
 async function finalizarEntrenamientoFetch(event) {
-    event.preventDefault(); // Evitamos que la página se recargue automáticamente
+    event.preventDefault(); 
+    
+    // Cambiamos el estilo del botón para dar feedback al usuario
+    const btnSubmit = event.target.querySelector('button[type="submit"]');
+    btnSubmit.innerHTML = '<i class="ti ti-loader"></i> Guardando...';
+    btnSubmit.style.opacity = '0.7';
     
     const form = document.getElementById('form-entrenamiento');
     const formData = new FormData(form);
     
-    // Enviamos los datos al servidor en segundo plano
     const response = await fetch("{{ url_for('rutinas.finalizar', oid_rutina=rutina.__oid__) }}", {
         method: 'POST',
         body: formData
     });
     
     if (response.ok) {
-        // CORRECCIÓN: Redirección al Feed de la comunidad
         window.location.href = "{{ url_for('registros.feed') }}";
     } else {
         alert("Hubo un problema al registrar tu entrenamiento.");
+        btnSubmit.innerHTML = '<i class="ti ti-check"></i> Finalizar y Publicar';
+        btnSubmit.style.opacity = '1';
     }
 }
 </script>

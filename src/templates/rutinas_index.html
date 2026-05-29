@@ -1,43 +1,81 @@
 {% extends "base.html" %}
 {% block content %}
-<hgroup>
-    <h2>Mis Rutinas</h2>
-    <p>Gestiona tus planes de entrenamiento personales.</p>
-</hgroup>
+<style>
+    dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px); }
+</style>
 
-<div style="margin-bottom: 1rem;">
-    <a href="{{ url_for('rutinas.nueva') }}" role="button" style="width: 100%;">➕ Crear Nueva Rutina</a>
-</div>
-
-<div class="grid" style="margin-bottom: 2rem;">
-    <a href="{{ url_for('ejercicios.index') }}" role="button" class="secondary outline" style="margin-bottom: 0;">📋 Catálogo General</a>
-    <a href="{{ url_for('ejercicios.personalizados') }}" role="button" class="secondary outline" style="margin-bottom: 0;">🛠️ Ejercicios Personalizados</a>
-</div>
-
-<div class="grid">
-    {% for rutina in rutinas %}
-    <article>
-        <header><strong>{{ rutina.nombre }}</strong></header>
-        <p><small>{{ rutina.lista_ejercicios_oids|length }} ejercicios configurados</small></p>
-            <footer class="grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                <a href="{{ url_for('rutinas.entrenar', oid_rutina=rutina.__oid__) }}" 
-                    role="button" style="background-color: #388e3c; border:none; width: 100%; margin-bottom: 0;">▶️ Entrenar</a>
+<div style="max-width: 800px; margin: 0 auto; width: 100%;">
     
-                <a href="{{ url_for('rutinas.editar', oid_rutina=rutina.__oid__) }}" 
-                     role="button" class="outline" style="width: 100%; margin-bottom: 0;">✏️ Editar</a>
-    
-                <form action="{{ url_for('rutinas.borrar', oid_rutina=rutina.__oid__) }}" 
-                      method="POST" style="margin:0; width: 100%;">
-                  <button type="submit" class="secondary outline" 
-                        style="width: 100%; margin-bottom: 0;" 
-                        onclick="return confirm('¿Borrar?');">Borrar</button>
-                </form>
-            </footer>
-    </article>
-    {% else %}
-    <article>
-        <p>No tienes rutinas creadas. ¡Pulsa el botón de arriba para empezar!</p>
-    </article>
-    {% endfor %}
+    <header style="margin-bottom: 24px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+            <i class="ti ti-notebook" style="color: var(--accent-light);"></i> Mis Rutinas
+        </h2>
+        <p class="text-faint" style="margin: 5px 0 0 0;">Gestiona tus rutinas y prepárate para entrenar.</p>
+    </header>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <a href="{{ url_for('rutinas.nueva') }}" class="btn-primary" style="text-align: center; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%;">
+            <i class="ti ti-plus"></i> Crear Nueva Rutina
+        </a>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <a href="{{ url_for('ejercicios.index') }}" class="btn-secondary" style="text-align: center; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                <i class="ti ti-list"></i> Catálogo General
+            </a>
+            <a href="{{ url_for('ejercicios.personalizados') }}" class="btn-secondary" style="text-align: center; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                <i class="ti ti-tool"></i> Personalizados
+            </a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {% for rutina in rutinas %}
+        <article class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="margin-bottom: 16px;">
+                <h3 style="margin: 0 0 4px 0; color: var(--text-primary);">{{ rutina.nombre }}</h3>
+                <p class="text-faint" style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <i class="ti ti-barbell" style="font-size: 16px;"></i> {{ rutina.lista_ejercicios_oids|length }} ejercicios
+                </p>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a href="{{ url_for('rutinas.entrenar', oid_rutina=rutina.__oid__) }}" class="btn-success" style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="ti ti-player-play"></i> Iniciar Sesión
+                </a>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <a href="{{ url_for('rutinas.editar', oid_rutina=rutina.__oid__) }}" class="btn-secondary" style="text-align: center; padding: 8px;">Editar</a>
+                    <button type="button" class="btn-ghost" style="width: 100%; padding: 8px; color: var(--text-muted);" onclick="abrirModalBorrarRutina('{{ rutina.__oid__ }}', '{{ rutina.nombre }}')">Borrar</button>
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px;">
+            <i class="ti ti-notebook" style="font-size: 48px; color: var(--bg-border); margin-bottom: 16px;"></i>
+            <h3 style="color: var(--text-secondary);">No tienes rutinas</h3>
+            <p class="text-faint">Crea tu primera rutina para empezar a registrar progresos.</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
+
+<dialog id="modal-borrar" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--bg-border); border-radius: 12px; padding: 24px; width: 90%; max-width: 320px; text-align: center;">
+    <i class="ti ti-alert-triangle" style="font-size: 48px; color: var(--warning); margin-bottom: 16px;"></i>
+    <h4 style="margin: 0 0 8px 0; font-size: 16px;">¿Borrar Rutina?</h4>
+    <p class="text-faint" id="modal-texto" style="font-size: 13px; margin-bottom: 24px;">Esta acción no se puede deshacer.</p>
+    
+    <div style="display: flex; gap: 12px;">
+        <button type="button" class="btn-secondary" style="flex: 1;" onclick="document.getElementById('modal-borrar').close()">Cancelar</button>
+        <form id="form-borrar" method="POST" style="flex: 1; margin: 0;">
+            <button type="submit" class="btn-ghost" style="width: 100%; color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">Sí, borrar</button>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    function abrirModalBorrarRutina(oid, nombre) {
+        document.getElementById('modal-texto').innerText = `Vas a eliminar tu rutina "${nombre}".`;
+        document.getElementById('form-borrar').action = `/rutinas/borrar/${oid}`;
+        document.getElementById('modal-borrar').showModal();
+    }
+</script>
 {% endblock %}
