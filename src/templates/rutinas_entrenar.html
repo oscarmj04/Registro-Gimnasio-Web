@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    /* Estilos específicos para el modal nativo en Dark Mode */
+    /* Estilos para los modales */
     dialog {
         background: var(--bg-surface);
         color: var(--text-primary);
@@ -9,10 +9,10 @@
         border-radius: 12px;
         padding: 24px;
         width: 90%;
-        max-width: 400px;
+        max-width: 320px;
+        text-align: center;
     }
-    dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
-    /* Ocultamos los selectores numéricos (flechitas) de los inputs para un look más limpio */
+    dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px); }
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
@@ -29,9 +29,10 @@
         </div>
         <div style="display: flex; align-items: center; gap: 16px;">
             <span id="timer" style="color: var(--accent-light); font-weight: 500; font-size: 20px; letter-spacing: 1px; font-variant-numeric: tabular-nums;">00:00</span>
-            <a href="{{ url_for('rutinas.index') }}" class="btn-ghost" style="padding: 8px; border: none;" onclick="return confirm('¿Seguro que quieres abortar el entrenamiento? Perderás los datos.');" title="Cancelar">
+            <button type="button" class="btn-ghost" style="padding: 8px; border: none; color: var(--text-muted);" 
+                    onclick="document.getElementById('modal-desechar-entrenamiento').showModal()" title="Cancelar">
                 <i class="ti ti-x" style="font-size: 20px;"></i>
-            </a>
+            </button>
         </div>
     </header>
 
@@ -42,15 +43,10 @@
             {% for ej in ejercicios %}
             {% set eid = ej.__oid__|string %}
             <article class="card" id="card-{{ eid }}" style="border-left: 3px solid var(--accent);">
-                <header style="margin-bottom: 16px;">
-                    <h4 style="margin: 0; font-size: 15px;">{{ ej.nombre }}</h4>
-                </header>
-                
+                <header style="margin-bottom: 16px;"><h4 style="margin: 0; font-size: 15px;">{{ ej.nombre }}</h4></header>
                 <input type="hidden" name="ejercicio_id" value="{{ eid }}">
                 <input type="hidden" name="nombre_ejercicio_{{ eid }}" value="{{ ej.nombre }}">
-                
                 <div id="series-{{ eid }}" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;"></div>
-                
                 <button type="button" class="btn-secondary" onclick="addSerie('{{ eid }}')" style="width: 100%; border-style: dashed;">
                     <i class="ti ti-plus"></i> Añadir Serie
                 </button>
@@ -82,31 +78,29 @@
     </form>
 </div>
 
+<dialog id="modal-desechar-entrenamiento">
+    <i class="ti ti-flame" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+    <h4 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-primary);">¿Desechar Entrenamiento?</h4>
+    <p class="text-faint" style="font-size: 13px; margin-bottom: 24px;">Si sales ahora, se perderán todos los datos.</p>
+    <div style="display: flex; gap: 12px;">
+        <button type="button" class="btn-secondary" style="flex: 1;" onclick="document.getElementById('modal-desechar-entrenamiento').close()">Cancelar</button>
+        <a href="{{ url_for('rutinas.index') }}" onclick="guardado = true;" class="btn-ghost" style="flex: 1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; padding-top: 10px; text-align: center;">Sí, desechar</a>
+    </div>
+</dialog>
+
 <dialog id="modal-nuevo-ejercicio">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h5 style="margin: 0; font-size: 16px;">Nuevo Ejercicio</h5>
-      <button class="btn-ghost" style="padding: 4px; border: none;" onclick="document.getElementById('modal-nuevo-ejercicio').close()">
-          <i class="ti ti-x"></i>
-      </button>
+      <button class="btn-ghost" style="padding: 4px; border: none;" onclick="document.getElementById('modal-nuevo-ejercicio').close()"><i class="ti ti-x"></i></button>
   </div>
-  
   <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
-      <div>
-          <label>Nombre</label>
-          <input type="text" id="modal-nombre" placeholder="Ej: Press Militar">
-      </div>
-      <div>
-          <label>Grupo Muscular</label>
-          <select id="modal-grupo">
-              <option value="Pecho">Pecho</option>
-              <option value="Espalda">Espalda</option>
-              <option value="Pierna">Pierna</option>
-              <option value="Brazos">Brazos</option>
-              <option value="Core">Core</option>
-          </select>
-      </div>
+      <input type="text" id="modal-nombre" placeholder="Nombre (Ej: Press Militar)">
+      <select id="modal-grupo">
+          <option value="Pecho">Pecho</option><option value="Espalda">Espalda</option>
+          <option value="Pierna">Pierna</option><option value="Brazos">Brazos</option>
+          <option value="Core">Core</option>
+      </select>
   </div>
-  
   <div style="display: flex; gap: 12px;">
       <button class="btn-ghost" style="flex: 1;" onclick="document.getElementById('modal-nuevo-ejercicio').close()">Cancelar</button>
       <button class="btn-primary" style="flex: 1;" onclick="guardarEjercicioAjax()">Guardar</button>
@@ -114,28 +108,31 @@
 </dialog>
 
 <script>
+// Lógica de protección de cierre
+let guardado = false;
+window.addEventListener('beforeunload', function (e) {
+    if (!guardado) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
 async function guardarEjercicioAjax() {
     const nombre = document.getElementById('modal-nombre').value;
     const grupo = document.getElementById('modal-grupo').value;
-
     if (!nombre) { alert("El nombre es obligatorio"); return; }
-
     const response = await fetch("{{ url_for('ejercicios.crear_ajax') }}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: nombre, grupo_muscular: grupo })
     });
-
     if (response.ok) {
         const data = await response.json();
         renderNuevoEjercicio(data.oid, data.nombre);
-        
         const sel = document.getElementById('sel-ej');
         const opt = document.createElement('option');
-        opt.value = data.oid;
-        opt.text = data.nombre;
+        opt.value = data.oid; opt.text = data.nombre;
         sel.add(opt);
-        
         document.getElementById('modal-nuevo-ejercicio').close();
         document.getElementById('modal-nombre').value = "";
     } else {
@@ -162,18 +159,12 @@ function addSerie(id) {
     const container = document.getElementById(`series-${id}`);
     const num = container.children.length + 1;
     const div = document.createElement('div');
-    
-    /* Diseño de la fila de la serie: Bullet violeta, Inputs limpios, Botón de borrado */
     div.style.cssText = "display: flex; align-items: center; gap: 8px;";
     div.innerHTML = `
-        <div class="num-serie" style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0;">
-            S${num}
-        </div>
+        <div class="num-serie" style="width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0;">S${num}</div>
         <input type="number" step="0.5" name="peso_${id}" placeholder="Kg" style="margin: 0; text-align: center; flex: 1;">
         <input type="number" name="reps_${id}" placeholder="Reps" style="margin: 0; text-align: center; flex: 1;">
-        <button type="button" class="btn-ghost" onclick="this.parentElement.remove(); recalcularNumeros(document.getElementById('series-${id}'))" style="padding: 8px; border: none; color: var(--text-faint);">
-            <i class="ti ti-trash"></i>
-        </button>
+        <button type="button" class="btn-ghost" onclick="this.parentElement.remove(); recalcularNumeros(document.getElementById('series-${id}'))" style="padding: 8px; border: none; color: var(--text-faint);"><i class="ti ti-trash"></i></button>
     `;
     container.appendChild(div);
 }
@@ -202,32 +193,26 @@ setInterval(() => {
     document.getElementById('duracion_input').value = txt;
 }, 1000);
 
-// Iniciar con 1 serie por cada ejercicio cargado
 window.onload = () => {
-    {% for ej in ejercicios %}
-    addSerie('{{ ej.__oid__|string }}');
-    {% endfor %}
+    {% for ej in ejercicios %} addSerie('{{ ej.__oid__|string }}'); {% endfor %}
 };
 
 async function finalizarEntrenamientoFetch(event) {
     event.preventDefault(); 
-    
-    // Cambiamos el estilo del botón para dar feedback al usuario
+    guardado = true; // MARCADO COMO GUARDADO ANTES DE ENVIAR
     const btnSubmit = event.target.querySelector('button[type="submit"]');
     btnSubmit.innerHTML = '<i class="ti ti-loader"></i> Guardando...';
     btnSubmit.style.opacity = '0.7';
-    
     const form = document.getElementById('form-entrenamiento');
     const formData = new FormData(form);
-    
     const response = await fetch("{{ url_for('rutinas.finalizar', oid_rutina=rutina.__oid__) }}", {
         method: 'POST',
         body: formData
     });
-    
     if (response.ok) {
         window.location.href = "{{ url_for('registros.feed') }}";
     } else {
+        guardado = false; // REINICIAMOS SI FALLA
         alert("Hubo un problema al registrar tu entrenamiento.");
         btnSubmit.innerHTML = '<i class="ti ti-check"></i> Finalizar y Publicar';
         btnSubmit.style.opacity = '1';

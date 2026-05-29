@@ -82,9 +82,18 @@ def entrenar(oid_rutina):
     for e_oid in rutina.lista_ejercicios_oids:
         ej = next((e for e in sirp.load_all(Ejercicio) if str(e.__oid__) == e_oid), None)
         if ej: ejercicios_rutina.append(ej)
-        
-    return render_template('rutinas_entrenar.html', rutina=rutina, ejercicios=ejercicios_rutina)
 
+    catalogo = [e for e in sirp.load_all(Ejercicio) 
+                if getattr(e, 'activo', True) and 
+                (getattr(e, 'es_defecto', False) or getattr(e, 'user_id', None) == current_user.get_id())]
+    
+    # Pasamos 'catalogo' al template
+    return render_template('rutinas_entrenar.html', 
+                           rutina=rutina, 
+                           ejercicios=ejercicios_rutina, 
+                           catalogo=catalogo)
+
+        
 @rutinas_bp.route('/finalizar/<oid_rutina>', methods=['POST'])
 @login_required
 def finalizar(oid_rutina):

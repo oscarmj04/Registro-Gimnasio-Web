@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+    dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(2px); }
+</style>
+
 <div style="max-width: 700px; margin: 0 auto; width: 100%;">
     <div style="margin-bottom: 20px;">
         <a href="{{ url_for('rutinas.index') }}" class="text-faint" style="display: flex; align-items: center; gap: 4px;">
@@ -55,11 +59,9 @@
                     </div>
                 </div>
                 
-                <form action="{{ url_for('ejercicios.borrar_total', oid_ejercicio=ej.__oid__) }}" method="POST" style="margin: 0;">
-                    <button type="submit" class="btn-ghost" style="color: var(--warning);" onclick="return confirm('¿Seguro que quieres eliminar este ejercicio por completo?');">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                </form>
+                <button type="button" class="btn-ghost" style="color: #ef4444; border: none;" onclick="prepararBorrado('{{ ej.__oid__ }}', '{{ ej.nombre }}')">
+                    <i class="ti ti-trash"></i>
+                </button>
             </article>
             {% else %}
             <div class="card" style="text-align: center; padding: 30px;">
@@ -69,4 +71,25 @@
         </div>
     </section>
 </div>
+
+<dialog id="modal-borrar-ejercicio" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--bg-border); border-radius: 12px; padding: 24px; width: 90%; max-width: 320px; text-align: center;">
+    <i class="ti ti-trash" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+    <h4 style="margin: 0 0 8px 0; font-size: 16px; color: var(--text-primary);">¿Borrar Ejercicio?</h4>
+    <p class="text-faint" id="texto-borrar-ej" style="font-size: 13px; margin-bottom: 24px;"></p>
+    
+    <div style="display: flex; gap: 12px;">
+        <button type="button" class="btn-secondary" style="flex: 1;" onclick="document.getElementById('modal-borrar-ejercicio').close()">Cancelar</button>
+        <form id="form-borrar-ej" method="POST" style="flex: 1; margin: 0;">
+            <button type="submit" class="btn-ghost" style="width: 100%; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none;">Sí, borrar</button>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    function prepararBorrado(oid, nombre) {
+        document.getElementById('texto-borrar-ej').innerText = `Vas a eliminar "${nombre}" de tu catálogo permanentemente.`;
+        document.getElementById('form-borrar-ej').action = `/ejercicios/borrar_total/${oid}`;
+        document.getElementById('modal-borrar-ejercicio').showModal();
+    }
+</script>
 {% endblock %}

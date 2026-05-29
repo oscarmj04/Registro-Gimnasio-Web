@@ -66,7 +66,7 @@ def nuevo_personalizado():
     desc = request.form.get('descripcion', '')
     
     if nombre and grupo:
-        nuevo_ej = Ejercicio(nombre, group_muscular=grupo, descripcion=desc, es_defecto=False, user_id=current_user.get_id())
+        nuevo_ej = Ejercicio(nombre, grupo_muscular=grupo, descripcion=desc, es_defecto=False, user_id=current_user.get_id())
         sirp.save(nuevo_ej)
         flash('Ejercicio personalizado creado con éxito.')
     return redirect(url_for('ejercicios.personalizados'))
@@ -115,17 +115,3 @@ def crear_ajax():
         'nombre': nuevo_ej.nombre
     })
 
-@ejercicios_bp.route('/generar_base')
-@login_required
-def generar_base():
-    ejercicios_base = [
-        Ejercicio("Press de Banca", "Pecho", "Básico con barra", es_defecto=True),
-        Ejercicio("Sentadilla Trasera", "Pierna", "Básico con barra", es_defecto=True),
-        Ejercicio("Peso Muerto", "Espalda", "Levantamiento tradicional", es_defecto=True),
-        Ejercicio("Dominadas", "Espalda", "Tracción con peso corporal", es_defecto=True),
-        Ejercicio("Press Militar", "Brazos", "Empuje vertical de hombros", es_defecto=True)
-    ]
-    for ej in ejercicios_base:
-        sirp.save(ej)
-    flash('¡Ejercicios por defecto generados con éxito!')
-    return redirect(url_for('rutinas.index'))
