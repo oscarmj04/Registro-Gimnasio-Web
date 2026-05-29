@@ -57,10 +57,21 @@ def editar(oid_rutina):
 def actualizar(oid_rutina):
     rutina = next((r for r in sirp.load_all(Rutina) if str(r.__oid__) == oid_rutina), None)
     if rutina:
+        # 1. Actualizamos el nombre
         rutina.nombre = request.form.get('nombre')
-        rutina.lista_ejercicios_oids = request.form.getlist('ejercicios_seleccionados')
+        
+        # 2. Recogemos la lista ordenada. 
+        # Si el usuario los movió en el HTML, esta lista vendrá ya ordenada.
+        lista_nueva = request.form.getlist('ejercicios_seleccionados')
+        
+        # 3. Guardamos la lista ordenada (si está vacía, se guarda vacía, lo cual es correcto)
+        rutina.lista_ejercicios_oids = lista_nueva
+        
         sirp.save(rutina)
         flash('Rutina actualizada correctamente.')
+    else:
+        flash('Error al actualizar: Rutina no encontrada.', 'error')
+        
     return redirect(url_for('rutinas.index'))
 
 @rutinas_bp.route('/borrar/<oid_rutina>', methods=['POST'])
