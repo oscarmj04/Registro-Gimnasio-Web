@@ -1,0 +1,4 @@
+Título del proyecto: Tracker de Rutinas de Gimnasio y Progreso
+URL del proyecto: https://github.com/oscarmj04/Registro-Gimnasio-Web
+Apellidos y nombre: Marqués Juan, Óscar
+DNI: 78221887Z
